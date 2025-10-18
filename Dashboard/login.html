@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    #errorMsg { display: none; }
+  </style>
+</head>
+<body class="bg-gray-100 font-thai flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded-md shadow-md w-full max-w-xs">
+    <h2 class="text-2xl font-semibold text-center mb-6">เข้าสู่ระบบ (Admin)</h2>
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label for="username" class="block text-sm text-gray-700">Username</label>
+        <input id="username" type="text" required
+               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+      </div>
+      <div>
+        <label for="password" class="block text-sm text-gray-700">Password</label>
+        <input id="password" type="password" required
+               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+      </div>
+      <button type="submit"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md text-sm">
+        ล็อกอิน
+      </button>
+      <p id="errorMsg" class="mt-2 text-red-500 text-sm text-center">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</p>
+    </form>
+  </div>
+  <!-- Assume Config.js defines CONFIG_URL -->
+    <script src="Config.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('errorMsg').style.display = 'none';
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!username || !password) {
+        document.getElementById('errorMsg').textContent = 'กรุณากรอกให้ครบ';
+        document.getElementById('errorMsg').style.display = 'block';
+        return;
+      }
+
+      try {
+        // เรียก API adminLogin (GET)
+        const url = `${CONFIG_URL}?action=adminLogin&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+        const resp = await fetch(url, { method: 'GET', mode: 'cors' });
+        if (!resp.ok) throw new Error('Network response was not ok');
+
+        const data = await resp.json(); // { success: true/false, message: '...', displayName: 'Teeranan kamroi' }
+        if (data.success) {
+          // เก็บ status และ displayName
+          localStorage.setItem('isAdminLoggedIn', 'true');
+          localStorage.setItem('adminName', data.displayName); // เปลี่ยนกุญแจเป็น 'adminName'
+          // ไปที่หน้า member.html (Dashboard)
+          window.location.href = 'appointment.html';
+        } else {
+          document.getElementById('errorMsg').textContent = data.message || 'ล็อกอินไม่สำเร็จ';
+          document.getElementById('errorMsg').style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Error fetching adminLogin:', err);
+        document.getElementById('errorMsg').textContent = 'เกิดข้อผิดพลาดระบบ ลองใหม่ภายหลัง';
+        document.getElementById('errorMsg').style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

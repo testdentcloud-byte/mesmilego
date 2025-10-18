@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่าทั่วไป - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .font-thai {
+            font-family: 'Noto Sans Thai', sans-serif;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            /* slate-300 */
+            border-radius: 3px;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar-track {
+            background-color: #f1f5f9;
+            /* slate-100 */
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .loading-placeholder td {
+            text-align: center;
+            padding: 1rem;
+            color: #64748b;
+            /* slate-500 */
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white p-5 border-r border-slate-200 flex flex-col fixed inset-y-0 left-0 z-30">
+        <div class="flex items-center space-x-2 mb-8">
+            <div class="bg-green-400 p-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold text-slate-800">ME-SMILE</h1>
+        </div>
+            <!-- ===================================================================
+            (B) แสดงชื่อผู้ดูแลที่ล็อกอินมาแล้ว (ดึงจาก localStorage.adminName)
+            =================================================================== -->
+            <div class="bg-slate-50 p-3 rounded-lg mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div>
+                            <p id="adminName" class="text-sm font-semibold text-slate-700 font-thai">Dashboard User</p>
+                            <p class="text-xs text-slate-500 font-thai">ผู้ดูแลระบบ</p>
+                        </div>
+                    </div>
+                    <!-- ปุ่ม Logout -->
+                    <button onclick="logout()" class="text-red-500 hover:text-red-700 text-sm font-thai">
+                        logout
+                    </button>
+                </div>
+            </div>
+       <nav class="flex-grow space-y-1">
+                <p class="text-xs text-slate-400 uppercase font-semibold px-3 mb-2">Main Menu</p>
+                <a href="book.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>จองนัดหมายใหม่</span>
+                </a>
+                <a href="appointment.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>จัดการนัดหมาย</span>
+                </a>
+                <a href="service.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span>จัดการบริการ</span>
+                </a>
+                <a href="member.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>จัดการสมาชิก</span>
+                </a>
+                <a href="doctor.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>จัดการข้อมูลหมอ</span>
+                </a>
+                <a href="setting.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 bg-green-100 text-green-700 rounded-md text-sm font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>ตั้งค่า</span>
+                </a>
+            </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 flex-1 flex flex-col">
+        <header class="bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-20">
+            <h1 class="text-xl font-semibold text-slate-700 font-thai">ตั้งค่าทั่วไป</h1>
+        </header>
+
+        <div class="flex-1 p-6 overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Time Slot Settings Card -->
+            <section class="bg-white p-6 rounded-lg shadow">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-slate-700 font-thai">⏱️ ตั้งค่าช่วงเวลาให้บริการ</h2>
+                    <button onclick="showTimeSlotForm()" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-3 rounded-md text-sm flex items-center space-x-1.5 font-thai">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                        <span>เพิ่มช่วงเวลา</span>
+                    </button>
+                </div>
+                <div id="timeSlotFormSection" class="hidden mb-4 border-t border-slate-200 pt-4">
+                    <form id="timeSlotForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                        <div>
+                            <label for="ts-id" class="block text-xs font-medium text-slate-600 font-thai">ไอดี</label>
+                            <input id="ts-id" name="ไอดี" class="mt-1 block w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm" readonly placeholder="อัตโนมัติ">
+                        </div>
+                        <div>
+                            <label for="ts-time" class="block text-xs font-medium text-slate-600 font-thai">ช่วงเวลา <span class="text-red-500">*</span></label>
+                            <input id="ts-time" name="ช่วงเวลา" type="time" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500">
+                        </div>
+                        <div>
+                            <label for="ts-slots" class="block text-xs font-medium text-slate-600 font-thai">จำนวนสล็อต <span class="text-red-500">*</span></label>
+                            <input id="ts-slots" name="สลอต" type="number" min="1" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="เช่น 1">
+                        </div>
+                        <div class="sm:col-span-3 flex justify-end space-x-2 mt-2">
+                            <button type="button" onclick="hideTimeSlotForm()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-3 rounded-md text-sm font-thai">ยกเลิก</button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md text-sm flex items-center space-x-1.5 font-thai">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M7.5 1C6.11929 1 5 2.11929 5 3.5V4H4C3.44772 4 3 4.44772 3 5V17C3 17.5523 3.44772 18 4 18H16C16.5523 18 17 17.5523 17 17V5C17 4.44772 16.5523 4 16 4H15V3.5C15 2.11929 13.8807 1 12.5 1H7.5ZM7 3.5C7 3.22386 7.22386 3 7.5 3H12.5C12.7761 3 13 3.22386 13 3.5V4H7V3.5Z M6 6H14V16H6V6Z" /></svg>
+                                <span>บันทึก</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div id="timeSlotTableContainer" class="overflow-x-auto table-scroll-container">
+                    <!-- Loading message will be injected here by JS -->
+                </div>
+            </section>
+
+            <!-- Holiday Settings Card -->
+            <section class="bg-white p-6 rounded-lg shadow">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-slate-700 font-thai">🗓️ ตั้งค่าวันหยุดพิเศษ</h2>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 mb-4 items-end">
+                    <div class="flex-grow">
+                        <label for="holidayInput" class="block text-xs font-medium text-slate-600 font-thai">เลือกวันที่ต้องการเพิ่มเป็นวันหยุด</label>
+                        <input id="holidayInput" type="date" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500">
+                    </div>
+                    <button onclick="addHoliday()" class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-3 rounded-md text-sm flex items-center justify-center space-x-1.5 font-thai">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                        <span>เพิ่มวันหยุด</span>
+                    </button>
+                </div>
+                <div id="holidayTableContainer" class="overflow-x-auto table-scroll-container">
+                    <!-- Loading message will be injected here by JS -->
+                </div>
+            </section>
+<section class="bg-white p-6 rounded-lg shadow lg:col-span-2"> <h2 class="text-lg font-semibold text-slate-700 mb-4 font-thai">⚙️ ตั้งค่าวันหยุดประจำสัปดาห์</h2>
+    <p class="text-sm text-slate-500 mb-4 font-thai">เลือกวันที่ต้องการให้เป็นวันหยุดถาวรในทุกสัปดาห์ การตั้งค่านี้จะมีผลกับปฏิทินในหน้าจองของลูกค้า</p>
+    
+    <div id="permanentHolidaysContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-slate-50">
+            <input type="checkbox" value="0" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 day-checkbox">
+            <span class="text-slate-700 font-thai">วันอาทิตย์</span>
+        </label>
+        <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-slate-50">
+            <input type="checkbox" value="1" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 day-checkbox">
+            <span class="text-slate-700 font-thai">วันจันทร์</span>
+        </label>
+        <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-slate-50">
+            <input type="checkbox" value="2" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 day-checkbox">
+            <span class="text-slate-700 font-thai">วันอังคาร</span>
+        </label>
+        <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-slate-50">
+            <input type="checkbox" value="3" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 day-checkbox">
+            <span class="text-slate-700 font-thai">วันพุธ</span>
+        </label>
+        <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-slate-50">
+            <input type="checkbox" value="4" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 day-checkbox">
+            <span class="text-slate-700 font-thai">วันพฤหัสบดี</span>
+        </label>
+        <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-slate-50">
+            <input type="checkbox" value="5" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 day-checkbox">
+            <span class="text-slate-700 font-thai">วันศุกร์</span>
+        </label>
+        <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-slate-50">
+            <input type="checkbox" value="6" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 day-checkbox">
+            <span class="text-slate-700 font-thai">วันเสาร์</span>
+        </label>
+    </div>
+    
+    <div class="flex justify-end border-t border-slate-200 pt-4">
+        <button id="saveHolidaysBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center space-x-2 font-thai">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M7.5 1C6.11929 1 5 2.11929 5 3.5V4H4C3.44772 4 3 4.44772 3 5V17C3 17.5523 3.44772 18 4 18H16C16.5523 18 17 17.5523 17 17V5C17 4.44772 16.5523 4 16 4H15V3.5C15 2.11929 13.8807 1 12.5 1H7.5ZM7 3.5C7 3.22386 7.22386 3 7.5 3H12.5C12.7761 3 13 3.22386 13 3.5V4H7V3.5Z M6 6H14V16H6V6Z" /></svg>
+            <span>บันทึกการตั้งค่าวันหยุดประจำ</span>
+        </button>
+    </div>
+</section>
+
+            <!-- Doctor Names Management Card -->
+            <section class="bg-white p-6 rounded-lg shadow lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-slate-700 font-thai">👨‍⚕️ จัดการรายชื่อหมอ</h2>
+                    <button onclick="showDoctorForm()" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-3 rounded-md text-sm flex items-center space-x-1.5 font-thai">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                        <span>เพิ่มหมอ</span>
+                    </button>
+                </div>
+                <div id="doctorFormSection" class="hidden mb-4 border-t border-slate-200 pt-4">
+                    <form id="doctorForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                        <div>
+                            <label for="doc-id" class="block text-xs font-medium text-slate-600 font-thai">ไอดี</label>
+                            <input id="doc-id" name="ไอดี" class="mt-1 block w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm" readonly placeholder="อัตโนมัติ">
+                        </div>
+                        <div>
+                            <label for="doc-name" class="block text-xs font-medium text-slate-600 font-thai">ชื่อหมอ <span class="text-red-500">*</span></label>
+                            <input id="doc-name" name="รายชื่อหมอ" type="text" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="เช่น ทพ.สมชาย ใจดี">
+                        </div>
+                        <div class="sm:col-span-2 flex justify-end space-x-2 mt-2">
+                            <button type="button" onclick="hideDoctorForm()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-3 rounded-md text-sm font-thai">ยกเลิก</button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md text-sm flex items-center space-x-1.5 font-thai">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M7.5 1C6.11929 1 5 2.11929 5 3.5V4H4C3.44772 4 3 4.44772 3 5V17C3 17.5523 3.44772 18 4 18H16C16.5523 18 17 17.5523 17 17V5C17 4.44772 16.5523 4 16 4H15V3.5C15 2.11929 13.8807 1 12.5 1H7.5ZM7 3.5C7 3.22386 7.22386 3 7.5 3H12.5C12.7761 3 13 3.22386 13 3.5V4H7V3.5Z M6 6H14V16H6V6Z" /></svg>
+                                <span>บันทึก</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div id="doctorTableContainer" class="overflow-x-auto table-scroll-container">
+                    <!-- Loading message will be injected here by JS -->
+                </div>
+            </section>
+
+
+        </div>
+    </main>
+    <!-- Assume Config.js defines WEB_APP_URL -->
+    <script src="Config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        // ตรวจสอบสถานะล็อกอิน
+        const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+        if (!isLoggedIn) {
+        // ถ้าไม่ได้ล็อกอิน ให้เด้งไปหน้า login ทันที
+        window.location.href = 'login.html';
+        return; // หยุดการทำงานที่เหลือบนหน้านี้
+        }
+        
+        // กรณีล็อกอินแล้ว ให้มาดึงชื่อ admin และโหลดข้อมูลสมาชิกตามเดิม
+        const adminName = localStorage.getItem('adminName') || 'Admin';
+        document.getElementById('adminName').textContent = adminName;
+        });
+        
+        // ฟังก์ชัน Logout (เหมือนเดิม)
+        function logout() {
+        localStorage.removeItem('isAdminLoggedIn');
+        localStorage.removeItem('adminName');
+        window.location.href = 'login.html';
+        }
+        const timeSlotTableContainer = document.getElementById('timeSlotTableContainer');
+        const holidayTableContainer = document.getElementById('holidayTableContainer');
+        const doctorTableContainer = document.getElementById('doctorTableContainer');
+
+        const loadingHTML = `
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50"><tr><th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ข้อมูล</th></tr></thead>
+            <tbody class="bg-white divide-y divide-slate-200">
+                <tr class="loading-placeholder"><td class="font-thai">⏳ กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+        </table>`;
+
+        // --- Time Slot Management ---
+        function showTimeSlotForm(isEdit = false) {
+            document.getElementById('timeSlotFormSection').classList.remove('hidden');
+            if (!isEdit) {
+                document.getElementById('timeSlotForm').reset();
+                document.getElementById('ts-id').value = '';
+            }
+            document.getElementById('timeSlotFormSection').scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }
+
+        function hideTimeSlotForm() {
+            document.getElementById('timeSlotFormSection').classList.add('hidden');
+            document.getElementById('timeSlotForm').reset();
+        }
+
+        document.getElementById('timeSlotForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {};
+            new FormData(this).forEach((value, key) => data[key] = value);
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+                customClass: {
+                    popup: 'font-thai'
+                }
+            });
+            fetch(CONFIG_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'insertOrUpdateTimeSlot',
+                    data
+                })
+            }).then(r => r.json()).then(result => {
+                if (result.success || result.id) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                        text: 'บันทึกข้อมูลช่วงเวลาเรียบร้อย',
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    });
+                    this.reset();
+                    hideTimeSlotForm();
+                    loadTimeSlots();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ผิดพลาด',
+                        text: result.message || 'ไม่สามารถบันทึกได้',
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    });
+                }
+            }).catch(err => Swal.fire({
+                icon: 'error',
+                title: 'ผิดพลาด',
+                text: `การเชื่อมต่อล้มเหลว: ${err}`,
+                customClass: {
+                    popup: 'font-thai'
+                }
+            }));
+        });
+
+        function loadTimeSlots() {
+            timeSlotTableContainer.innerHTML = loadingHTML; // Show loading message
+            fetch(`${CONFIG_URL}?action=fetchTimeSlots`)
+                .then(r => {
+                    if (!r.ok) throw new Error('Network response failed');
+                    return r.json()
+                })
+                .then(data => {
+                    let html = `
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50"><tr>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ไอดี</th>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ช่วงเวลา</th>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">จำนวนสล็อต</th>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">จัดการ</th>
+            </tr></thead><tbody class="bg-white divide-y divide-slate-200">`;
+                    if (data.length === 0) {
+                        html += `<tr><td colspan="4" class="px-3 py-3 text-center text-slate-500 font-thai">ยังไม่มีการตั้งค่าช่วงเวลา</td></tr>`;
+                    } else {
+                        data.forEach(t => {
+                            html += `<tr class="hover:bg-slate-50">
+                <td class="px-3 py-3 whitespace-nowrap text-slate-600 font-mono text-xs">${t['ไอดี']}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-slate-700 font-medium">${t['ช่วงเวลา']}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-slate-700">${t['สลอต']}</td>
+                <td class="px-3 py-3 whitespace-nowrap">
+                <button onclick="editTimeSlot('${t['ไอดี']}')" class="text-green-600 hover:text-green-900 mr-2 font-thai">แก้ไข</button>
+                <button onclick="deleteTimeSlot('${t['ไอดี']}')" class="text-red-600 hover:text-red-900 font-thai">ลบ</button>
+                </td>
+            </tr>`;
+                        });
+                    }
+                    html += '</tbody></table>';
+                    timeSlotTableContainer.innerHTML = html;
+                }).catch(err => {
+                    timeSlotTableContainer.innerHTML = `<p class="p-3 text-red-500 font-thai">โหลดข้อมูลช่วงเวลาล้มเหลว: ${err.message}</p>`;
+                });
+        }
+
+        function editTimeSlot(id) {
+            fetch(`${CONFIG_URL}?action=fetchTimeSlots`).then(r => r.json()).then(data => {
+                const t = data.find(x => x['ไอดี'] === id);
+                if (!t) return Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่พบข้อมูล',
+                    customClass: {
+                        popup: 'font-thai'
+                    }
+                });
+                const form = document.getElementById('timeSlotForm');
+                form.elements['ไอดี'].value = t['ไอดี'];
+                form.elements['ช่วงเวลา'].value = t['ช่วงเวลา'];
+                form.elements['สลอต'].value = t['สลอต'];
+                showTimeSlotForm(true);
+            });
+        }
+
+        function deleteTimeSlot(id) {
+            Swal.fire({
+                title: 'ลบช่วงเวลานี้?',
+                text: `ต้องการลบช่วงเวลาไอดี: ${id}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'ใช่, ลบเลย',
+                cancelButtonText: 'ยกเลิก',
+                customClass: {
+                    popup: 'font-thai'
+                }
+            }).then(res => {
+                if (res.isConfirmed) {
+                    fetch(CONFIG_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'deleteTimeSlot',
+                            id
+                        })
+                    }).then(r => r.json()).then(result => {
+                        if (result.success) {
+                            loadTimeSlots();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'ลบแล้ว',
+                                customClass: {
+                                    popup: 'font-thai'
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'ผิดพลาด',
+                                text: result.message || 'ไม่สามารถลบได้',
+                                customClass: {
+                                    popup: 'font-thai'
+                                }
+                            });
+                        }
+                    }).catch(err => Swal.fire({
+                        icon: 'error',
+                        title: 'ผิดพลาด',
+                        text: `การเชื่อมต่อล้มเหลว: ${err}`,
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    }));
+                }
+            });
+        }
+
+
+
+        function addHoliday() {
+            const date = document.getElementById('holidayInput').value;
+            if (!date) return Swal.fire('กรุณาเลือกวันที่', '', 'warning');
+            fetch(CONFIG_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'addHoliday',
+                    date
+                })
+            }).then(() => {
+                loadHolidays();
+                Swal.fire('เพิ่มวันหยุดแล้ว', '', 'success');
+            });
+        }
+
+
+        function loadHolidays() {
+            holidayTableContainer.innerHTML = loadingHTML;
+            fetch(`${CONFIG_URL}?action=fetchHolidays`).then(r => r.json()).then(data => {
+                let html = `
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50"><tr>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">วันหยุด</th>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">จัดการ</th>
+            </tr></thead><tbody>`;
+                data.forEach(d => {
+                    html += `<tr class="border-t">
+            <td class="px-3 py-3 whitespace-nowrap text-slate-700 font-medium">${d}</td>
+            <td class="px-3 py-3 whitespace-nowrap">
+              <button onclick="deleteHoliday('${d}')" class="text-red-600 hover:text-red-900 font-thai">ลบ</button>
+            </td>
+          </tr>`;
+                });
+                html += '</tbody></table>';
+                holidayTableContainer.innerHTML = html;
+            });
+        }
+
+
+        function deleteHoliday(date) {
+            Swal.fire({
+                title: `ลบ ${date}?`,
+                showCancelButton: true
+            }).then(res => {
+                if (res.isConfirmed) {
+                    fetch(CONFIG_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'deleteHoliday',
+                            date
+                        })
+                    }).then(() => {
+                        loadHolidays();
+                        Swal.fire('ลบแล้ว', '', 'success');
+                    });
+                }
+            });
+        }
+
+// ฟังก์ชันสำหรับโหลดค่าวันหยุดที่ตั้งไว้มาแสดงใน Checkbox
+async function loadPermanentHolidays() {
+    try {
+        const response = await fetch(`${CONFIG_URL}?action=fetchGeneralSettings`);
+        if (!response.ok) throw new Error('Network response was not ok.');
+        
+        const data = await response.json();
+        const holidayString = data.permanentHolidays || ''; // e.g., "6,0"
+        const savedDays = holidayString.split(',').filter(d => d.trim() !== ''); // e.g., ['6', '0']
+
+        // วนลูปเพื่อเช็ค/ไม่เช็ค Checkbox ตามค่าที่บันทึกไว้
+        document.querySelectorAll('.day-checkbox').forEach(checkbox => {
+            checkbox.checked = savedDays.includes(checkbox.value);
+        });
+
+    } catch (error) {
+        console.error('Error loading permanent holidays:', error);
+        Swal.fire({icon: 'error', title: 'ผิดพลาด!', text: 'ไม่สามารถโหลดการตั้งค่าวันหยุดประจำได้', customClass: { popup: 'font-thai' }});
+    }
+}
+
+// ฟังก์ชันสำหรับบันทึกค่าใหม่
+async function savePermanentHolidays() {
+    // รวบรวมค่าจาก Checkbox ที่ถูกเลือก
+    const selectedDays = [];
+    document.querySelectorAll('.day-checkbox:checked').forEach(checkbox => {
+        selectedDays.push(checkbox.value);
+    });
+
+    Swal.fire({
+        title: 'กำลังบันทึก...',
+        text: 'กรุณารอสักครู่',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+        customClass: { popup: 'font-thai' }
+    });
+
+    try {
+        const response = await fetch(CONFIG_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'updatePermanentHolidays',
+                data: selectedDays // ส่ง Array e.g., ['6', '0'] ไปที่ Backend
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            Swal.fire({icon: 'success', title: 'สำเร็จ!', text: result.message, customClass: { popup: 'font-thai' }});
+        } else {
+            throw new Error(result.message || 'ไม่สามารถบันทึกข้อมูลได้');
+        }
+    } catch (error) {
+        console.error('Error saving permanent holidays:', error);
+        Swal.fire({icon: 'error', title: 'ผิดพลาด!', text: error.message, customClass: { popup: 'font-thai' }});
+    }
+}
+        // Initial Load
+        loadTimeSlots();
+        loadHolidays();
+        loadPermanentHolidays(); 
+        loadDoctors();
+
+        // เมื่อปุ่มบันทึกวันหยุดประจำถูกคลิก
+        document.getElementById('saveHolidaysBtn').addEventListener('click', savePermanentHolidays); 
+
+        // --- Doctor Names Management ---
+        function showDoctorForm(isEdit = false) {
+            document.getElementById('doctorFormSection').classList.remove('hidden');
+            if (!isEdit) {
+                document.getElementById('doctorForm').reset();
+                document.getElementById('doc-id').value = '';
+            }
+            document.getElementById('doctorFormSection').scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }
+
+        function hideDoctorForm() {
+            document.getElementById('doctorFormSection').classList.add('hidden');
+            document.getElementById('doctorForm').reset();
+        }
+
+        document.getElementById('doctorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {};
+            new FormData(this).forEach((value, key) => data[key] = value);
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+                customClass: {
+                    popup: 'font-thai'
+                }
+            });
+            fetch(CONFIG_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'insertOrUpdateDoctor',
+                    data
+                })
+            }).then(r => r.json()).then(result => {
+                if (result.success || result.id) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                        text: 'บันทึกข้อมูลหมอเรียบร้อย',
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    });
+                    this.reset();
+                    hideDoctorForm();
+                    loadDoctors();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ผิดพลาด',
+                        text: result.message || 'ไม่สามารถบันทึกได้',
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    });
+                }
+            }).catch(err => Swal.fire({
+                icon: 'error',
+                title: 'ผิดพลาด',
+                text: `การเชื่อมต่อล้มเหลว: ${err}`,
+                customClass: {
+                    popup: 'font-thai'
+                }
+            }));
+        });
+
+        function loadDoctors() {
+            doctorTableContainer.innerHTML = loadingHTML;
+            fetch(`${CONFIG_URL}?action=fetchDoctors`)
+                .then(r => {
+                    if (!r.ok) throw new Error('Network response failed');
+                    return r.json()
+                })
+                .then(data => {
+                    let html = `
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50"><tr>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ไอดี</th>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ชื่อหมอ</th>
+              <th class="px-3 py-2.5 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">จัดการ</th>
+            </tr></thead><tbody class="bg-white divide-y divide-slate-200">`;
+                    if (data.length === 0) {
+                        html += `<tr><td colspan="3" class="px-3 py-3 text-center text-slate-500 font-thai">ยังไม่มีข้อมูลหมอ</td></tr>`;
+                    } else {
+                        data.forEach(d => {
+                            html += `<tr class="hover:bg-slate-50">
+                <td class="px-3 py-3 whitespace-nowrap text-slate-600 font-mono text-xs">${d['ไอดี']}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-slate-700 font-medium">${d['รายชื่อหมอ']}</td>
+                <td class="px-3 py-3 whitespace-nowrap">
+                <button onclick="editDoctor('${d['ไอดี']}')" class="text-green-600 hover:text-green-900 mr-2 font-thai">แก้ไข</button>
+                <button onclick="deleteDoctor('${d['ไอดี']}')" class="text-red-600 hover:text-red-900 font-thai">ลบ</button>
+                </td>
+            </tr>`;
+                        });
+                    }
+                    html += '</tbody></table>';
+                    doctorTableContainer.innerHTML = html;
+                }).catch(err => {
+                    doctorTableContainer.innerHTML = `<p class="p-3 text-red-500 font-thai">โหลดข้อมูลหมอล้มเหลว: ${err.message}</p>`;
+                });
+        }
+
+        function editDoctor(id) {
+            fetch(`${CONFIG_URL}?action=fetchDoctors`).then(r => r.json()).then(data => {
+                const d = data.find(x => x['ไอดี'] === id);
+                if (!d) return Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่พบข้อมูล',
+                    customClass: {
+                        popup: 'font-thai'
+                    }
+                });
+                const form = document.getElementById('doctorForm');
+                form.elements['ไอดี'].value = d['ไอดี'];
+                form.elements['รายชื่อหมอ'].value = d['รายชื่อหมอ'];
+                showDoctorForm(true);
+            });
+        }
+
+        function deleteDoctor(id) {
+            Swal.fire({
+                title: 'ลบหมอคนนี้?',
+                text: `ต้องการลบหมอไอดี: ${id}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'ใช่, ลบเลย',
+                cancelButtonText: 'ยกเลิก',
+                customClass: {
+                    popup: 'font-thai'
+                }
+            }).then(res => {
+                if (res.isConfirmed) {
+                    fetch(CONFIG_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'deleteDoctor',
+                            id
+                        })
+                    }).then(r => r.json()).then(result => {
+                        if (result.success) {
+                            loadDoctors();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'ลบแล้ว',
+                                customClass: {
+                                    popup: 'font-thai'
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'ผิดพลาด',
+                                text: result.message || 'ไม่สามารถลบได้',
+                                customClass: {
+                                    popup: 'font-thai'
+                                }
+                            });
+                        }
+                    }).catch(err => Swal.fire({
+                        icon: 'error',
+                        title: 'ผิดพลาด',
+                        text: `การเชื่อมต่อล้มเหลว: ${err}`,
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    }));
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
+

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แอดมิน - จัดการนัดหมาย</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Thai:wght@400;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #00b8b0;
+      --primary-light: #33d1c9;
+      --accent: #b4dd2f;
+      --accent-dark: #a3d226;
+      --danger: #ff7474;
+      --bg: #f0fffc;
+      --bg-card: #ffffff;
+      --border: #c9efe9;
+      --text-main: #024a4e;
+      --text-subtle: #79a7ab;
+      --overlay-bg: rgba(0, 184, 176, 0.2);
+      --popup-overlay: rgba(0, 0, 0, 0.45);
+    }
+        select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+      background: linear-gradient(155deg, #eafffb 0%, #f8fff2 55%, #ffffff 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    main::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(0, 184, 176, 0.12), transparent 55%),
+        radial-gradient(circle at bottom left, rgba(180, 221, 47, 0.12), transparent 50%);
+      pointer-events: none;
+    }
+
+    main>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      color: var(--text-main);
+    }
+
+    select,
+    button {
+      font-family: inherit;
+    }
+
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 0.55rem 2.5rem 0.55rem 0.85rem;
+      border-radius: 0.75rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background-image: linear-gradient(45deg, transparent 50%, var(--text-subtle) 50%),
+        linear-gradient(135deg, var(--text-subtle) 50%, transparent 50%);
+      background-position: calc(100% - 1.2rem) center, calc(100% - 0.8rem) center;
+      background-size: 0.5rem 0.5rem, 0.5rem 0.5rem;
+      background-repeat: no-repeat;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(0, 184, 176, 0.2);
+    }
+
+    .filter-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 0.5rem solid rgba(255, 255, 255, 0.6);
+      border-top: 0.5rem solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #loadingOverlay {
+      background: var(--overlay-bg);
+      backdrop-filter: blur(2px);
+    }
+
+    #customAlertOverlay {
+      background: var(--popup-overlay);
+    }
+
+    .alert-card {
+      background: var(--bg-card);
+      padding: 1.75rem;
+      border-radius: 1rem;
+      width: 320px;
+      box-shadow: 0 18px 38px rgba(0, 184, 176, 0.28);
+      border-top: 6px solid var(--accent);
+      color: var(--text-main);
+    }
+
+    .alert-message {
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0.8rem 1rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 0.85rem;
+      font-size: 0.85rem;
+      border-radius: 0.65rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 184, 176, 0.18);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-light);
+    }
+
+    .btn-secondary {
+      background: #f5fffd;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost {
+      background: #e6eec3;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(0, 184, 176, 0.08);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: var(--text-main);
+    }
+
+    .btn-accent:hover:not(:disabled) {
+      background: var(--accent-dark);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #ff8b8b;
+    }
+
+    .btn-ghost {
+      background: #ffec00;
+      color: var(--text-main);
+      border: 1px solid transparent;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      border-color: rgba(0, 184, 176, 0.25);
+      background: rgba(0, 184, 176, 0.08);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 0.9rem;
+      background: var(--bg-card);
+      box-shadow: 0 12px 30px rgba(0, 184, 176, 0.16);
+    }
+
+    thead th {
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .table-head-cell {
+      background: linear-gradient(135deg, var(--primary) 0%, #00c7bf 55%, #00b8b0 100%);
+      color: #ffffff;
+    }
+
+    tbody td {
+      border-bottom: 1px solid rgba(0, 184, 176, 0.1);
+      color: var(--text-main);
+      font-size: 0.8rem;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover td {
+      background: rgba(0, 184, 176, 0.05);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      min-width: 5.5rem;
+    }
+
+    .status-pill.pending {
+      background: rgba(0, 184, 176, 0.15);
+      color: var(--primary);
+    }
+
+    .status-pill.confirmed {
+      background: rgba(180, 221, 47, 0.2);
+      color: #507300;
+    }
+
+    .status-pill.cancelled {
+      background: rgba(255, 116, 116, 0.18);
+      color: #c62828;
+    }
+
+    .status-pill.completed {
+      background: rgba(0, 184, 176, 0.22);
+      color: #055f59;
+    }
+
+    .detail-card {
+      background: linear-gradient(140deg, #f5fffd 0%, #ffffff 100%);
+      border: 1px solid var(--border);
+      border-radius: 0.3rem;
+      padding: 1.25rem;
+      box-shadow: 0 14px 32px rgba(0, 184, 176, 0.16);
+      color: var(--text-main);
+    }
+
+    .detail-card p {
+      margin-bottom: 0.35rem;
+    }
+
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .action-btn {
+      white-space: nowrap;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .pagination-btn {
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text-main);
+      padding: 0.45rem 0.95rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+    }
+
+    .pagination-btn:hover {
+      background: rgba(0, 184, 176, 0.12);
+    }
+
+    .pagination-btn.is-active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 10px 20px rgba(0, 184, 176, 0.3);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .empty-state {
+      padding: 2rem;
+      color: var(--text-subtle);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen relative bg-fixed">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 flex items-center justify-center hidden z-50">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Custom Confirm Overlay -->
+  <div id="customAlertOverlay" class="fixed inset-0 invisible items-center justify-center z-50">
+    <div class="alert-card text-center">
+      <p id="customAlertMessage" class="alert-message"></p>
+      <div id="customAlertButtons" class="flex justify-center gap-3">
+        <button id="customAlertCancel" class="btn btn-secondary">ยกเลิก</button>
+        <button id="customAlertOk" class="btn btn-primary">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Adding Doctor Info -->
+  <div id="doctorInfoModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[100]">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <h3 class="text-xl font-bold mb-4">เพิ่มข้อมูลหมอและห้อง</h3>
+      <form id="doctorInfoForm">
+        <input type="hidden" id="appointmentId" />
+        <input type="hidden" id="appointmentDate" />
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2">เลือกหมอ</label>
+          <select id="doctorSelect" required class="w-full border border-gray-300 rounded px-3 py-2">
+            <option value="">-- เลือกหมอ --</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2">เลือกห้อง</label>
+          <select id="roomSelect" required class="w-full border border-gray-300 rounded px-3 py-2">
+            <option value="">-- เลือกห้อง --</option>
+            <option value="ห้อง 1">ห้อง 1</option>
+            <option value="ห้อง 2">ห้อง 2</option>
+          </select>
+        </div>
+
+        <div class="flex gap-3 justify-end">
+          <button type="button" id="cancelDoctorInfoBtn" class="btn btn-secondary">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <main class="max-w-4xl w-full mx-auto p-4 sm:p-6">
+    <h1 class="text-2xl font-bold mb-6 text-center">หน้าจัดการนัดหมาย (Admin)</h1>
+
+    <div class="filter-panel">
+      <select id="statusFilter" class="p-2 rounded">
+        <option value="">ทั้งหมด</option>
+        <option value="รอการยืนยัน">รอการยืนยัน</option>
+        <option value="ยืนยันแล้ว">ยืนยันแล้ว</option>
+        <option value="ยกเลิก">ยกเลิก</option>
+        <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+      </select>
+      <select id="dateSort" class="p-2 rounded">
+        <option value="latest">วันที่ล่าสุด</option>
+        <option value="oldest">วันที่เก่าสุด</option>
+      </select>
+    </div>
+
+    <div class="overflow-x-auto" >
+      <table class="text-sm">
+        <thead>
+          <tr>
+            <th class="table-head-cell p-3 text-left">ชื่อ-นามสกุล</th>
+            <th class="table-head-cell p-3 text-left">วันที่</th>
+            <th class="table-head-cell p-3 text-center">สถานะ</th>
+            <th class="table-head-cell p-3 text-center">ดู</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div id="pagination" class="pagination text-sm">
+      <!-- Buttons will be injected here -->
+    </div>
+  </main>
+
+  <script src="Config.js"></script>
+  <script>
+    const rowsPerPage = 15;
+    let filteredData = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    const showLoading = () => document.getElementById('loadingOverlay').classList.remove('hidden');
+    const hideLoading = () => document.getElementById('loadingOverlay').classList.add('hidden');
+
+    const overlay = document.getElementById('customAlertOverlay');
+    const alertMessage = document.getElementById('customAlertMessage');
+    const btnOk = document.getElementById('customAlertOk');
+    const btnCancel = document.getElementById('customAlertCancel');
+
+    const normalizeStatus = status => (status || '').toString().trim().toLowerCase();
+
+    function getStatusClass(status) {
+      const normalized = normalizeStatus(status);
+      if (!normalized) return 'pending';
+      if (normalized.includes('รอ') || normalized.includes('pending')) return 'pending';
+      if (normalized.includes('ยืนยัน') || normalized.includes('confirm')) return 'confirmed';
+      if (normalized.includes('ยกเลิก') || normalized.includes('cancel')) return 'cancelled';
+      if (normalized.includes('เสร็จ') || normalized.includes('complete')) return 'completed';
+      return 'pending';
+    }
+
+    function isPendingStatus(status) {
+      const normalized = normalizeStatus(status);
+      if (!normalized) return false;
+      return normalized.includes('รอ') || normalized.includes('pending');
+    }
+
+    function isFinalStatus(status) {
+      const normalized = normalizeStatus(status);
+      if (!normalized) return false;
+      return normalized.includes('ยกเลิก') || normalized.includes('cancel') || normalized.includes('เสร็จ') || normalized.includes('complete');
+    }
+
+    function confirmAction(message, action, id) {
+      alertMessage.textContent = message;
+      overlay.classList.replace('invisible', 'flex');
+
+      btnOk.textContent = 'ตกลง';
+      btnCancel.textContent = 'ยกเลิก';
+      btnOk.style.display = btnCancel.style.display = 'inline-block';
+
+      btnCancel.onclick = () => {
+        overlay.classList.replace('flex', 'invisible');
+      };
+
+      btnOk.onclick = () => {
+        btnOk.style.display = btnCancel.style.display = 'none';
+        alertMessage.textContent = 'กำลังส่งแจ้งเตือน…';
+        showLoading();
+
+        fetch(`${WEB_APP_URL}?action=${action}&id=${encodeURIComponent(id)}`, {
+          method: 'POST'
+        })
+          .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.text();
+          })
+          .then(() => {
+            alertMessage.textContent = 'แจ้งเตือนสำเร็จ';
+            btnOk.textContent = 'ปิด';
+            btnOk.style.display = 'inline-block';
+            hideLoading();
+            btnOk.onclick = () => {
+              overlay.classList.replace('flex', 'invisible');
+              loadData();
+            };
+          })
+          .catch(err => {
+            console.error(err);
+            hideLoading();
+            alertMessage.textContent = 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง';
+            btnOk.textContent = 'ลองใหม่';
+            btnCancel.textContent = 'ยกเลิก';
+            btnOk.style.display = btnCancel.style.display = 'inline-block';
+            btnOk.onclick = () => confirmAction(message, action, id);
+            btnCancel.onclick = () => overlay.classList.replace('flex', 'invisible');
+          });
+      };
+    }
+
+    async function loadData() {
+      showLoading();
+      try {
+        const res = await fetch(`${WEB_APP_URL}?action=fetchBookings`);
+        const data = await res.json();
+
+        // parse & sort
+        const sorted = data.map(d => ({
+          ...d,
+          parsedDate: new Date(d.date.split('-').reverse().join('-'))
+        })).sort((a, b) =>
+          document.getElementById('dateSort').value === 'latest' ?
+            b.parsedDate - a.parsedDate :
+            a.parsedDate - b.parsedDate
+        );
+
+        // filter
+        const statusFilterValue = document.getElementById('statusFilter').value;
+        const normalizedFilter = normalizeStatus(statusFilterValue);
+        filteredData = sorted.filter(d => {
+          if (!normalizedFilter) return true;
+          return normalizeStatus(d.status).includes(normalizedFilter);
+        });
+
+        // setup paging
+        currentPage = 1;
+        totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+        renderPagination();
+        renderPage();
+
+      } catch (err) {
+        console.error(err);
+        confirmAction('โหลดข้อมูลล้มเหลว ต้องการลองใหม่หรือไม่?', 'fetchBookings', '');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function renderPage() {
+      const start = (currentPage - 1) * rowsPerPage;
+      const pageData = filteredData.slice(start, start + rowsPerPage);
+      renderTableBody(pageData);
+      highlightCurrentPage();
+    }
+
+    function renderTableBody(data) {
+      const tbody = document.getElementById('dataBody');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">ไม่พบข้อมูล</td></tr>';
+        return;
+      }
+
+      data.forEach(item => {
+        const fullName = ((item.firstName || '') + ' ' + (item.lastName || '')).trim() || '-';
+        const date = item.date || '-';
+        const status = item.status || '-';
+        const time = item.time || '-';
+        const phonenumber = item.phonenumber || '-';
+        const idCardOrSocial = item.idCardOrSocial || '-';
+        const diseaseAllergy = item.diseaseAllergy || '-';
+        const service = item.service || '-';
+        const note = item.note || '-';
+        const statusClass = getStatusClass(status);
+        const pendingStatus = isPendingStatus(status);
+        const finalStatus = isFinalStatus(status);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="p-3 border-b">${fullName}</td>
+          <td class="p-3 border-b">${date}</td>
+          <td class="p-3 border-b text-center"><span class="status-pill ${statusClass}">${status}</span></td>
+          <td class="p-3 border-b text-center">
+            <button type="button" class="toggleDetail btn btn-secondary btn-sm">ดู</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+
+        const detailRow = document.createElement('tr');
+        detailRow.classList.add('hidden');
+        detailRow.innerHTML = `
+          <td colspan="4" class="p-2">
+            <div class="detail-card text-sm">
+              <p><strong>ชื่อ:</strong> ${fullName}</p>
+              <p><strong>เบอร์โทร:</strong> ${phonenumber}</p>
+              <p><strong>เลขบัตร/ประกัน:</strong> ${idCardOrSocial}</p>
+              <p><strong>โรค/แพ้:</strong> ${diseaseAllergy}</p>
+              <p><strong>บริการ:</strong> ${service}</p>
+              <p><strong>วันที่:</strong> ${date}</p>
+              <p><strong>เวลา:</strong> ${time}</p>
+              <p><strong>หมายเหตุ:</strong> ${note}</p>
+              <p><strong>สถานะ:</strong> ${status}</p>
+              <div class="action-group">
+                <button type="button" class="action-btn btn btn-secondary btn-sm" data-action="sendReminder" data-id="${item.idKey}">แจ้งยืนยัน</button>
+                <button type="button" class="action-btn btn btn-ghost btn-sm" data-action="sendReminderWithoutPayment" data-id="${item.idKey}">แจ้งเตือน</button>
+                <button type="button" class="action-btn btn btn-accent btn-sm" data-action="confirmBooking" data-id="${item.idKey}" ${pendingStatus ? '' : 'disabled'}>ยืนยัน</button>
+                <button type="button" class="action-btn btn btn-danger btn-sm" data-action="cancelBooking" data-id="${item.idKey}" ${finalStatus ? 'disabled' : ''}>ยกเลิก</button>
+                <button type="button" class="action-btn btn btn-primary btn-sm" data-action="completeBooking" data-id="${item.idKey}" ${finalStatus ? 'disabled' : ''}>เสร็จสิ้น</button>
+                <button type="button" class="action-btn btn btn-sm" style="background: #9333ea; color: white;" data-action="addDoctorInfo" data-id="${item.idKey}" data-date="${date}">เพิ่มข้อมูล</button>
+              </div>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(detailRow);
+
+        row.querySelector('.toggleDetail').onclick = () => {
+          detailRow.classList.toggle('hidden');
+        };
+      });
+
+      tbody.querySelectorAll('.action-btn').forEach(btn => {
+        btn.onclick = () => {
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          
+          // ถ้าเป็น action addDoctorInfo ให้เปิด modal
+          if (action === 'addDoctorInfo') {
+            const date = btn.dataset.date;
+            openDoctorInfoModal(id, date);
+          } else {
+            confirmAction(`คุณต้องการดำเนินการ "${action}" หรือไม่?`, action, id);
+          }
+        };
+      });
+    }
+
+    function renderPagination() {
+      const container = document.getElementById('pagination');
+      container.innerHTML = '';
+
+      if (totalPages <= 1) {
+        return;
+      }
+
+      // first
+      const btnFirst = document.createElement('button');
+      btnFirst.textContent = 'หน้าสุด';
+      btnFirst.type = 'button';
+      btnFirst.dataset.nav = 'first';
+      btnFirst.className = 'pagination-btn';
+      btnFirst.disabled = currentPage === 1;
+      btnFirst.onclick = () => {
+        if (currentPage !== 1) {
+          currentPage = 1;
+          renderPage();
+        }
+      };
+      container.appendChild(btnFirst);
+
+      // page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.dataset.page = i;
+        btn.type = 'button';
+        btn.className = `pagination-btn${i === currentPage ? ' is-active' : ''}`;
+        btn.onclick = () => {
+          if (currentPage !== i) {
+            currentPage = i;
+            renderPage();
+          }
+        };
+        container.appendChild(btn);
+      }
+
+      // last
+      const btnLast = document.createElement('button');
+      btnLast.textContent = 'หลังสุด';
+      btnLast.type = 'button';
+      btnLast.dataset.nav = 'last';
+      btnLast.className = 'pagination-btn';
+      btnLast.disabled = currentPage === totalPages;
+      btnLast.onclick = () => {
+        if (currentPage !== totalPages) {
+          currentPage = totalPages;
+          renderPage();
+        }
+      };
+      container.appendChild(btnLast);
+    }
+
+    function highlightCurrentPage() {
+      const pagination = document.getElementById('pagination');
+      if (!pagination.children.length) return;
+
+      pagination.querySelectorAll('button[data-page]').forEach(btn => {
+        btn.classList.toggle('is-active', Number(btn.dataset.page) === currentPage);
+      });
+
+      const firstBtn = pagination.querySelector('button[data-nav="first"]');
+      const lastBtn = pagination.querySelector('button[data-nav="last"]');
+      if (firstBtn) firstBtn.disabled = currentPage === 1;
+      if (lastBtn) lastBtn.disabled = currentPage === totalPages;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      ['statusFilter', 'dateSort'].forEach(id => {
+        document.getElementById(id).addEventListener('change', loadData);
+      });
+      loadData();
+      setupDoctorInfoModal();
+    });
+
+    // ========== ฟังก์ชันสำหรับจัดการ Modal ข้อมูลหมอ ==========
+    function setupDoctorInfoModal() {
+      const doctorInfoModal = document.getElementById('doctorInfoModal');
+      const cancelDoctorInfoBtn = document.getElementById('cancelDoctorInfoBtn');
+      const doctorInfoForm = document.getElementById('doctorInfoForm');
+      const doctorSelect = document.getElementById('doctorSelect');
+
+      cancelDoctorInfoBtn.addEventListener('click', () => {
+        doctorInfoModal.classList.add('hidden');
+        doctorInfoModal.classList.remove('flex');
+      });
+
+      doctorInfoForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoading();
+
+        const formData = new FormData();
+        formData.append('action', 'updateAppointmentDoctor');
+        formData.append('id', document.getElementById('appointmentId').value);
+        formData.append('doctor', doctorSelect.value);
+        formData.append('room', document.getElementById('roomSelect').value);
+
+        try {
+          const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.text();
+          hideLoading();
+          alertMessage.textContent = result;
+          overlay.classList.replace('invisible', 'flex');
+          btnOk.style.display = 'inline-block';
+          btnCancel.style.display = 'none';
+          btnOk.onclick = () => {
+            overlay.classList.replace('flex', 'invisible');
+            doctorInfoModal.classList.add('hidden');
+            doctorInfoModal.classList.remove('flex');
+            loadData(); // รีโหลดข้อมูล
+          };
+        } catch (error) {
+          hideLoading();
+          alertMessage.textContent = 'เกิดข้อผิดพลาด: ' + error.message;
+          overlay.classList.replace('invisible', 'flex');
+          btnOk.style.display = 'inline-block';
+          btnCancel.style.display = 'none';
+          btnOk.onclick = () => overlay.classList.replace('flex', 'invisible');
+        }
+      });
+    }
+
+    async function openDoctorInfoModal(appointmentId, appointmentDate) {
+      const doctorInfoModal = document.getElementById('doctorInfoModal');
+      const doctorSelect = document.getElementById('doctorSelect');
+      
+      document.getElementById('appointmentId').value = appointmentId;
+      document.getElementById('appointmentDate').value = appointmentDate;
+      
+      // ดึงรายชื่อหมอจากวันที่นั้นๆ
+      showLoading();
+      try {
+        const response = await fetch(`${WEB_APP_URL}?action=getDoctorsByDate&date=${appointmentDate}`);
+        const doctors = await response.json();
+        
+        doctorSelect.innerHTML = '<option value="">-- เลือกหมอ --</option>';
+        doctors.forEach(doctor => {
+          const option = document.createElement('option');
+          option.value = doctor;
+          option.textContent = doctor;
+          doctorSelect.appendChild(option);
+        });
+        
+        hideLoading();
+        doctorInfoModal.classList.remove('hidden');
+        doctorInfoModal.classList.add('flex');
+      } catch (error) {
+        hideLoading();
+        alertMessage.textContent = 'โหลดข้อมูลหมอล้มเหลว: ' + error.message;
+        overlay.classList.replace('invisible', 'flex');
+        btnOk.style.display = 'inline-block';
+        btnCancel.style.display = 'none';
+        btnOk.onclick = () => overlay.classList.replace('flex', 'invisible');
+      }
+    }
+  </script>
+</body>
+
+</html>

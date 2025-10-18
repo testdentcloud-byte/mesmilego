@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการบริการ - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Assume Config.js defines CONFIG_URL -->
+    <!-- <script src="Config.js"></script> -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .font-thai {
+            font-family: 'Noto Sans Thai', sans-serif;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            /* slate-300 */
+            border-radius: 3px;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar-track {
+            background-color: #f1f5f9;
+            /* slate-100 */
+        }
+        /* Ensure hidden class takes precedence */
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white p-5 border-r border-slate-200 flex flex-col fixed inset-y-0 left-0 z-30">
+        <div class="flex items-center space-x-2 mb-8">
+            <div class="bg-green-400 p-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold text-slate-800">ME-SMILE</h1>
+        </div>
+        <!-- ===================================================================
+        (B) แสดงชื่อผู้ดูแลที่ล็อกอินมาแล้ว (ดึงจาก localStorage.adminName)
+        =================================================================== -->
+            <div class="bg-slate-50 p-3 rounded-lg mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div>
+                            <p id="adminName" class="text-sm font-semibold text-slate-700 font-thai">Dashboard User</p>
+                            <p class="text-xs text-slate-500 font-thai">ผู้ดูแลระบบ</p>
+                        </div>
+                    </div>
+                    <!-- ปุ่ม Logout -->
+                    <button onclick="logout()" class="text-red-500 hover:text-red-700 text-sm font-thai">
+                        logout
+                    </button>
+                </div>
+            </div>
+        <nav class="flex-grow space-y-1">
+                <p class="text-xs text-slate-400 uppercase font-semibold px-3 mb-2">Main Menu</p>
+                <a href="book.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>จองนัดหมายใหม่</span>
+                </a>
+                <a href="appointment.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>จัดการนัดหมาย</span>
+                </a>
+                <a href="service.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 bg-green-100 text-green-700 rounded-md text-sm font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span>จัดการบริการ</span>
+                </a>
+                <a href="member.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>จัดการสมาชิก</span>
+                </a>
+                <a href="doctor.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>จัดการข้อมูลหมอ</span>
+                </a>
+                <a href="setting.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>ตั้งค่า</span>
+                </a>
+            </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 flex-1 flex flex-col">
+        <!-- Top bar -->
+        <header class="bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-20">
+            <div class="relative w-1/3">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </span>
+                <input type="text" id="serviceSearch" placeholder="ค้นหาบริการ..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 font-thai">
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 p-6 overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-semibold text-slate-800 font-thai">🛠️ จัดการบริการ</h1>
+                <button onclick="showAddForm()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center space-x-2 font-thai">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    <span>เพิ่มบริการใหม่</span>
+                </button>
+            </div>
+
+            <!-- Form Section -->
+            <section id="formSection" class="bg-white p-6 rounded-lg shadow mb-6 hidden">
+                <h2 class="text-lg font-medium text-slate-700 mb-4 font-thai" id="formTitle">เพิ่มบริการ</h2>
+                <form id="serviceForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div class="md:col-span-2">
+                        <label for="form-id" class="block text-sm font-medium text-slate-700 font-thai">ไอดี</label>
+                        <input type="text" id="form-id" name="ไอดี" placeholder="ระบบสร้างอัตโนมัติ" class="mt-1 block w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm shadow-sm" readonly>
+                    </div>
+                    <div>
+                        <label for="form-service-name" class="block text-sm font-medium text-slate-700 font-thai">ชื่อบริการ <span class="text-red-500">*</span></label>
+                        <input type="text" id="form-service-name" name="รายการ" placeholder="เช่น ตัดผม, ทำสีผม" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
+                    </div>
+                    <div>
+                        <label for="form-price" class="block text-sm font-medium text-slate-700 font-thai">ราคา (บาท) <span class="text-red-500">*</span></label>
+                        <input type="number" id="form-price" name="ราคา" placeholder="เช่น 300" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="form-description" class="block text-sm font-medium text-slate-700 font-thai">รายละเอียดบริการ</label>
+                        <textarea id="form-description" name="รายละเอียด" placeholder="อธิบายเกี่ยวกับบริการเพิ่มเติม (ถ้ามี)" rows="3" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="imgInput" class="block text-sm font-medium text-slate-700 font-thai">รูปภาพประกอบ</label>
+                        <input type="file" id="imgInput" accept="image/*" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                        <img id="imgPreview" class="hidden w-40 h-32 mt-2 object-cover rounded-md border border-slate-200">
+                        <input type="hidden" name="รูปภาพOLD" id="รูปภาพOLD">
+                    </div>
+                    <div class="md:col-span-2 flex justify-end space-x-3 mt-2">
+                        <button type="button" onclick="hideForm()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-4 rounded-md text-sm font-thai">ยกเลิก</button>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center space-x-2 font-thai">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M7.5 1C6.11929 1 5 2.11929 5 3.5V4H4C3.44772 4 3 4.44772 3 5V17C3 17.5523 3.44772 18 4 18H16C16.5523 18 17 17.5523 17 17V5C17 4.44772 16.5523 4 16 4H15V3.5C15 2.11929 13.8807 1 12.5 1H7.5ZM7 3.5C7 3.22386 7.22386 3 7.5 3H12.5C12.7761 3 13 3.22386 13 3.5V4H7V3.5Z M6 6H14V16H6V6Z" /></svg>
+                            <span>บันทึกบริการ</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Table Section -->
+            <section class="bg-white shadow rounded-lg overflow-hidden">
+                <div id="serviceTableContainer" class="overflow-x-auto table-scroll-container">
+                </div>
+            </section>
+        </div>
+    </main>
+
+   <!-- Assume Config.js defines WEB_APP_URL -->
+    <script src="Config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ตรวจสอบสถานะล็อกอิน
+            const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+            if (!isLoggedIn) {
+              // ถ้าไม่ได้ล็อกอิน ให้เด้งไปหน้า login ทันที
+              window.location.href = 'login.html';
+              return; // หยุดการทำงานที่เหลือบนหน้านี้
+            }
+        
+            // กรณีล็อกอินแล้ว ให้มาดึงชื่อ admin และโหลดข้อมูลสมาชิกตามเดิม
+            const adminName = localStorage.getItem('adminName') || 'Admin';
+            document.getElementById('adminName').textContent = adminName;
+          });
+        
+          // ฟังก์ชัน Logout (เหมือนเดิม)
+          function logout() {
+            localStorage.removeItem('isAdminLoggedIn');
+            localStorage.removeItem('adminName');
+            window.location.href = 'login.html';
+          }
+
+        const serviceSearchInput = document.getElementById('serviceSearch');
+        let allServicesData = []; // Store all services for client-side search
+
+        function showAddForm(title = 'เพิ่มบริการใหม่', isEdit = false) {
+            document.getElementById('formSection').classList.remove('hidden');
+            document.getElementById('formTitle').textContent = title;
+            if (!isEdit) {
+                document.getElementById('serviceForm').reset();
+                document.getElementById('imgPreview').classList.add('hidden');
+                document.getElementById('imgPreview').src = '';
+                document.getElementById('รูปภาพOLD').value = ''; // ต้องล้างค่านี้สำหรับรายการใหม่
+                document.getElementById('form-id').value = ''; // ต้องล้าง ID สำหรับรายการใหม่
+            }
+            document.getElementById('formSection').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        function hideForm() {
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('serviceForm').reset();
+            document.getElementById('imgPreview').classList.add('hidden');
+            document.getElementById('imgPreview').src = '';
+            document.getElementById('รูปภาพOLD').value = ''; // ต้องล้างค่านี้เมื่อซ่อนฟอร์ม
+            document.getElementById('form-id').value = ''; // ต้องล้าง ID เมื่อซ่อนฟอร์ม
+        }
+
+        function setupImagePreview() {
+            const imgInput = document.getElementById('imgInput');
+            const imgPreview = document.getElementById('imgPreview');
+            imgInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imgPreview.src = e.target.result;
+                        imgPreview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imgPreview.classList.add('hidden');
+                    imgPreview.src = ''; // Clear preview if no file selected
+                }
+            });
+        }
+
+        async function processImageForUpload(formElement, dataObject) {
+            const imgInput = formElement.querySelector('#imgInput');
+            // 'รูปภาพOLD' ควรถูกตั้งค่าก่อนเรียกฟังก์ชันนี้ (จาก editService)
+            // ถ้าไม่มีไฟล์ใหม่ถูกเลือก, รูปภาพOLD จะยังคงอยู่
+            // ถ้าเลือกไฟล์ใหม่, รูปภาพBase64 จะถูกเพิ่ม และ GAS จะใช้มัน
+            if (imgInput.files.length > 0) {
+                const file = imgInput.files[0];
+                return new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onloadend = function() {
+                        dataObject['รูปภาพBase64'] = reader.result.split(',')[1];
+                        dataObject['รูปภาพMimeType'] = file.type;
+                        dataObject['รูปภาพFilename'] = file.name;
+                        resolve();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                // If no new file, 'รูปภาพOLD' which contains the existing image URL will be used by GAS
+                // No need to set รูปภาพBase64 or MimeType
+                return Promise.resolve();
+            }
+        }
+
+        function loadServices() {
+            fetch(`${CONFIG_URL}?action=fetchData`) // Assuming 'fetchData' is your GAS action for services
+                .then(response => {
+                    if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
+                    return response.json();
+                })
+                .then(data => {
+                    allServicesData = Array.isArray(data) ? data : [];
+                    renderServiceTable(allServicesData);
+                })
+                .catch(error => {
+                    console.error('Error loading services:', error);
+                    document.getElementById('serviceTableContainer').innerHTML = `<p class="p-4 text-red-500 font-thai">เกิดข้อผิดพลาดในการโหลดข้อมูลบริการ: ${error.message}</p>`;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ผิดพลาด!',
+                        text: `ไม่สามารถโหลดข้อมูลบริการได้: ${error.message}`,
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    });
+                });
+        }
+
+        function renderServiceTable(dataToRender) {
+            let html = `<table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50">
+              <tr>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">รูปภาพ</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ชื่อบริการ</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">รายละเอียด</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ราคา</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">จัดการ</th>
+              </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-slate-200">`;
+
+            if (dataToRender.length === 0) {
+                html += `<tr><td colspan="5" class="px-4 py-4 text-center text-slate-500 font-thai">ไม่พบข้อมูลบริการ</td></tr>`;
+            } else {
+                dataToRender.forEach(service => {
+                    html += `<tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 whitespace-nowrap">
+                  <img src="${service['รูปภาพ'] || 'https://via.placeholder.com/80x60.png?text=No+Image'}" alt="${service['รายการ']}" class="w-20 h-16 object-cover rounded-md">
+              </td>
+              <td class="px-4 py-3 align-top">
+                  <div class="font-medium text-slate-800 font-thai">${service['รายการ']}</div>
+                  <div class="text-xs text-slate-500 font-mono">ID: ${service['ไอดี'] || '-'}</div>
+              </td>
+              <td class="px-4 py-3 text-slate-600 align-top font-thai max-w-xs truncate" title="${service['รายละเอียด']}">${service['รายละเอียด'] || '-'}</td>
+              <td class="px-4 py-3 whitespace-nowrap text-slate-700 font-medium align-top font-thai">${service['ราคา'] ? parseFloat(service['ราคา']).toLocaleString('th-TH', { style: 'currency', currency: 'THB' }) : '-'}</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-medium align-top">
+                  <button onclick="editService('${service['ไอดี']}')" class="text-green-600 hover:text-green-900 mr-3 font-thai">แก้ไข</button>
+                  <button onclick="deleteService('${service['ไอดี']}')" class="text-red-600 hover:text-red-900 font-thai">ลบ</button>
+              </td>
+          </tr>`;
+                });
+            }
+            html += '</tbody></table>';
+            document.getElementById('serviceTableContainer').innerHTML = html;
+        }
+
+        serviceSearchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredServices = allServicesData.filter(service => {
+                return (service['รายการ'] && service['รายการ'].toLowerCase().includes(searchTerm)) ||
+                    (service['รายละเอียด'] && service['รายละเอียด'].toLowerCase().includes(searchTerm));
+            });
+            renderServiceTable(filteredServices);
+        });
+
+
+        document.getElementById('serviceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = this;
+            const serviceData = {};
+            new FormData(form).forEach((value, key) => serviceData[key] = value);
+
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+                customClass: {
+                    popup: 'font-thai'
+                }
+            });
+
+            try {
+                await processImageForUpload(form, serviceData); // Wait for image processing
+
+                const response = await fetch(CONFIG_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'insertOrUpdateService',
+                        data: serviceData
+                    })
+                });
+                const result = await response.json();
+
+                // ตรวจสอบผลลัพธ์จาก GAS อย่างแม่นยำ
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ!',
+                        text: result.message, // ใช้ข้อความที่มาจาก GAS
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    });
+                    form.reset();
+                    hideForm();
+                    loadServices();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ผิดพลาด!',
+                        text: result.message || 'ไม่สามารถบันทึกข้อมูลได้', // ใช้ข้อความที่มาจาก GAS
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error submitting service form:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ผิดพลาด!',
+                    text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ หรือประมวลผลข้อมูล: ' + error.message,
+                    customClass: {
+                        popup: 'font-thai'
+                    }
+                });
+            }
+        });
+
+        function editService(id) {
+            const serviceToEdit = allServicesData.find(s => String(s['ไอดี']) === String(id)); // เปรียบเทียบ ID เป็น String
+            if (!serviceToEdit) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่พบข้อมูล',
+                    text: `ไม่พบข้อมูลบริการไอดี: ${id}`,
+                    customClass: {
+                        popup: 'font-thai'
+                    }
+                });
+                return;
+            }
+
+            const form = document.getElementById('serviceForm');
+            form.elements['ไอดี'].value = serviceToEdit['ไอดี'];
+            form.elements['รายการ'].value = serviceToEdit['รายการ'];
+            form.elements['รายละเอียด'].value = serviceToEdit['รายละเอียด'] || '';
+            form.elements['ราคา'].value = serviceToEdit['ราคา'];
+            form.elements['รูปภาพOLD'].value = serviceToEdit['รูปภาพ'] || ''; // เก็บ URL รูปภาพเดิมไว้
+
+            const imgPreview = document.getElementById('imgPreview');
+            if (serviceToEdit['รูปภาพ']) {
+                imgPreview.src = serviceToEdit['รูปภาพ'];
+                imgPreview.classList.remove('hidden');
+            } else {
+                imgPreview.classList.add('hidden');
+                imgPreview.src = '';
+            }
+            document.getElementById('imgInput').value = ''; // ล้างไฟล์ที่เลือกไว้ เพื่อให้ผู้ใช้สามารถเลือกใหม่ได้
+
+            showAddForm(`แก้ไขบริการ: ${serviceToEdit['รายการ']}`, true);
+        }
+
+        function deleteService(id) {
+            Swal.fire({
+                title: 'ต้องการลบบริการนี้?',
+                text: `คุณแน่ใจหรือไม่ว่าต้องการลบบริการไอดี: ${id}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก',
+                customClass: {
+                    popup: 'font-thai',
+                    title: 'font-thai',
+                    htmlContainer: 'font-thai',
+                    confirmButton: 'font-thai',
+                    cancelButton: 'font-thai'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'กำลังลบ...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading(),
+                        customClass: {
+                            popup: 'font-thai'
+                        }
+                    });
+                    fetch(CONFIG_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'deleteService',
+                                id: id
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(res => {
+                            if (res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'ลบสำเร็จ!',
+                                    text: res.message, // ใช้ข้อความจาก GAS
+                                    customClass: {
+                                        popup: 'font-thai'
+                                    }
+                                });
+                                loadServices();
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'ผิดพลาด!',
+                                    text: res.message || 'ไม่สามารถลบบริการได้', // ใช้ข้อความจาก GAS
+                                    customClass: {
+                                        popup: 'font-thai'
+                                    }
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error deleting service:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'ผิดพลาด!',
+                                text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message,
+                                customClass: {
+                                    popup: 'font-thai'
+                                }
+                            });
+                        });
+                }
+            });
+        }
+
+        // Initial Setup
+        setupImagePreview();
+        loadServices();
+    </script>
+</body>
+
+</html>

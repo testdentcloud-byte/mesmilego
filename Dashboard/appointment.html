@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Default font */
+        }
+
+        .font-thai {
+            /* Apply this class where Thai text is prominent */
+            font-family: 'Noto Sans Thai', sans-serif;
+        }
+
+        .kanban-column-content::-webkit-scrollbar,
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .kanban-column-content::-webkit-scrollbar-thumb,
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            /* slate-300 */
+            border-radius: 3px;
+        }
+
+        .kanban-column-content::-webkit-scrollbar-track,
+        .table-scroll-container::-webkit-scrollbar-track {
+            background-color: #f1f5f9;
+            /* slate-100 */
+        }
+
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: .5rem solid #eee;
+            border-top: .5rem solid #4ade80;
+            /* green-400 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+            /* Ensure override */
+        }
+
+        .actionBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Tab styles */
+
+        .tab-button.active {
+            color: #4ade80;
+            /* green-400 */
+            border-color: #4ade80;
+            /* green-400 */
+            font-weight: 600;
+        }
+
+        .tab-button:not(.active) {
+            color: #64748b;
+            /* slate-500 */
+            border-color: transparent;
+        }
+
+        .tab-button:not(.active):hover {
+            color: #334155;
+            /* slate-700 */
+            border-color: #cbd5e1;
+            /* slate-300 */
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100">
+    <div id="loadingOverlay"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-[100]">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="customAlertOverlay"
+        class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[100]">
+        <div class="bg-white p-6 rounded shadow-lg text-center w-80 font-thai">
+            <p id="customAlertMessage" class="mb-6 text-gray-700 text-sm"></p>
+            <div class="flex justify-center gap-4">
+                <button id="customAlertCancel" class="bg-gray-300 text-gray-800 px-4 py-2 rounded">ยกเลิก</button>
+                <button id="customAlertOk" class="bg-green-400 text-white px-4 py-2 rounded">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-64 bg-white p-5 border-r border-slate-200 flex flex-col">
+            <div class="flex items-center space-x-2 mb-8">
+                <div class="bg-green-400 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold text-slate-800">ME-SMILE</h1>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-lg mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div>
+                            <p id="adminName" class="text-sm font-semibold text-slate-700 font-thai">Dashboard User</p>
+                            <p class="text-xs text-slate-500 font-thai">ผู้ดูแลระบบ</p>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-red-500 hover:text-red-700 text-sm font-thai">
+                        logout
+                    </button>
+                </div>
+            </div>
+             <nav class="flex-grow space-y-1">
+                <p class="text-xs text-slate-400 uppercase font-semibold px-3 mb-2">Main Menu</p>
+                <a href="book.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>จองนัดหมายใหม่</span>
+                </a>
+                <a href="appointment.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 bg-green-100 text-green-700 rounded-md text-sm font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>จัดการนัดหมาย</span>
+                </a>
+                <a href="service.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span>จัดการบริการ</span>
+                </a>
+                <a href="member.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>จัดการสมาชิก</span>
+                </a>
+                <a href="doctor.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>จัดการข้อมูลหมอ</span>
+                </a>
+                <a href="setting.html"
+                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>ตั้งค่า</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 flex flex-col">
+            <header class="bg-white border-b border-slate-200 p-4 flex items-center justify-between">
+                <div class="relative w-1/3">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </span>
+                    <input type="text" id="nameSearch" placeholder="Search name..."
+                        class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-slate-500 hover:text-slate-700"><svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg></button>
+                </div>
+            </header>
+
+            <div class="flex-1 p-6 overflow-y-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-800 font-thai">จัดการนัดหมาย</h2>
+                </div>
+
+                <div class="mb-6">
+                    <div class="border-b border-slate-200">
+                        <nav id="tabsContainer" class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button data-tab-target="#kanbanViewContent"
+                                class="tab-button whitespace-nowrap py-3 px-1 border-b-2 text-sm font-thai active">
+                                มุมมองการ์ด
+                            </button>
+                            <button data-tab-target="#listViewContent"
+                                class="tab-button whitespace-nowrap py-3 px-1 border-b-2 text-sm font-thai">
+                                มุมมองรายการ
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-3">
+                    <h3 class="text-xl font-semibold text-slate-800 font-thai">ภาพรวมนัดหมาย</h3>
+                    <div class="flex flex-wrap items-center space-x-0 md:space-x-3 gap-2 md:gap-0">
+                        <select id="statusFilter"
+                            class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-thai">
+                            <option value="">สถานะทั้งหมด</option>
+                            <option value="รอการยืนยัน">รอการยืนยัน</option>
+                            <option value="ยืนยันแล้ว">ยืนยันแล้ว</option>
+                            <option value="ยกเลิก">ยกเลิก</option>
+                            <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+                        </select>
+                        <select id="dateSort"
+                            class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-thai">
+                            <option value="latest">วันที่ล่าสุด</option>
+                            <option value="oldest">วันที่เก่าสุด</option>
+                        </select>
+                        <button id="exportCsvBtn"
+                            class="flex items-center gap-2 p-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 font-thai">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div id="kanbanViewContent" data-tab-content>
+                    <div class="flex space-x-4 pb-4 overflow-x-auto">
+                        <div class="bg-slate-50 rounded-lg w-80 md:w-72 flex-shrink-0">
+                            <div class="p-3 border-t-4 border-yellow-400 rounded-t-lg">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-sm font-semibold text-slate-700 uppercase font-thai">รอการยืนยัน
+                                    </h4><span id="sourced-count"
+                                        class="text-xs bg-yellow-200 text-yellow-800 font-medium px-2 py-0.5 rounded-full">0</span>
+                                </div>
+                            </div>
+                            <div id="sourced-column-content"
+                                class="p-3 pt-0 space-y-3 kanban-column-content max-h-[calc(100vh-380px)] overflow-y-auto">
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-lg w-80 md:w-72 flex-shrink-0">
+                            <div class="p-3 border-t-4 border-blue-400 rounded-t-lg">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-sm font-semibold text-slate-700 uppercase font-thai">ยืนยันแล้ว</h4>
+                                    <span id="inprogress-count"
+                                        class="text-xs bg-blue-200 text-blue-800 font-medium px-2 py-0.5 rounded-full">0</span>
+                                </div>
+                            </div>
+                            <div id="inprogress-column-content"
+                                class="p-3 pt-0 space-y-3 kanban-column-content max-h-[calc(100vh-380px)] overflow-y-auto">
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-lg w-80 md:w-72 flex-shrink-0">
+                            <div class="p-3 border-t-4 border-green-400 rounded-t-lg">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-sm font-semibold text-slate-700 uppercase font-thai">เสร็จสิ้น</h4>
+                                    <span id="hired-count"
+                                        class="text-xs bg-green-200 text-green-800 font-medium px-2 py-0.5 rounded-full">0</span>
+                                </div>
+                            </div>
+                            <div id="hired-column-content"
+                                class="p-3 pt-0 space-y-3 kanban-column-content max-h-[calc(100vh-380px)] overflow-y-auto">
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-lg w-80 md:w-72 flex-shrink-0">
+                            <div class="p-3 border-t-4 border-red-400 rounded-t-lg">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-sm font-semibold text-slate-700 uppercase font-thai">ยกเลิก</h4>
+                                    <span id="rejected-count"
+                                        class="text-xs bg-red-200 text-red-800 font-medium px-2 py-0.5 rounded-full">0</span>
+                                </div>
+                            </div>
+                            <div id="rejected-column-content"
+                                class="p-3 pt-0 space-y-3 kanban-column-content max-h-[calc(100vh-380px)] overflow-y-auto">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="listViewContent" data-tab-content class="hidden">
+                    <div class="bg-white shadow rounded-lg overflow-hidden">
+                        <div class="overflow-x-auto table-scroll-container max-h-[calc(100vh-300px)]">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            ชื่อ-สกุล</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            วันที่/เวลา</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            บริการ</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            เบอร์โทร</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            เลขบัตร/ประกันสังคม</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            โรค/แพ้ยา</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            หมอ</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            ห้อง</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            สถานะ</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            หมายเหตุ</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai min-w-[320px]">
+                                            การดำเนินการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="appointmentTableBody" class="bg-white divide-y divide-gray-200">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="listPagination"
+                            class="p-4 border-t border-gray-200 flex justify-between items-center text-sm text-gray-600">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Adding Doctor Info -->
+    <div id="doctorInfoModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[100]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md font-thai">
+            <h3 class="text-xl font-bold mb-4">เพิ่มข้อมูลหมอและห้อง</h3>
+            <form id="doctorInfoForm">
+                <input type="hidden" id="appointmentId" />
+                <input type="hidden" id="appointmentDate" />
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">เลือกหมอ</label>
+                    <select id="doctorSelect" required class="w-full border border-gray-300 rounded px-3 py-2">
+                        <option value="">-- เลือกหมอ --</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">เลือกห้อง</label>
+                    <select id="roomSelect" required class="w-full border border-gray-300 rounded px-3 py-2">
+                        <option value="">-- เลือกห้อง --</option>
+                        <option value="ห้อง 1">ห้อง 1</option>
+                        <option value="ห้อง 2">ห้อง 2</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-3 justify-end">
+                    <button type="button" id="cancelDoctorInfoBtn"
+                        class="bg-gray-300 text-gray-800 px-4 py-2 rounded">ยกเลิก</button>
+                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="Config.js"></script>
+    <script>
+        // (A) เมื่อ DOM โหลดเสร็จ ให้แสดงชื่อผู้ดูแลจาก localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            // ตรวจสอบสถานะล็อกอิน
+            const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+            if (!isLoggedIn) {
+                // ถ้าไม่ได้ล็อกอิน ให้เด้งไปหน้า login ทันที
+                window.location.href = 'login.html';
+                return; // หยุดการทำงานที่เหลือบนหน้านี้
+            }
+
+            // กรณีล็อกอินแล้ว ให้มาดึงชื่อ admin และโหลดข้อมูลสมาชิกตามเดิม
+            const adminName = localStorage.getItem('adminName') || 'Admin';
+            document.getElementById('adminName').textContent = adminName;
+        });
+
+        // ฟังก์ชัน Logout (เหมือนเดิม)
+        function logout() {
+            localStorage.removeItem('isAdminLoggedIn');
+            localStorage.removeItem('adminName');
+            window.location.href = 'login.html';
+        }
+
+        let allAppointmentsData = [];
+        let currentView = 'kanban'; // 'kanban' or 'list'
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const alertOverlay = document.getElementById('customAlertOverlay');
+        const alertMessageEl = document.getElementById('customAlertMessage');
+        const alertOkBtn = document.getElementById('customAlertOk');
+        const alertCancelBtn = document.getElementById('customAlertCancel');
+
+        const nameSearchInput = document.getElementById('nameSearch');
+        const statusFilterSelect = document.getElementById('statusFilter');
+        const dateSortSelect = document.getElementById('dateSort');
+
+        const tabsContainer = document.getElementById('tabsContainer');
+        const tabContents = document.querySelectorAll('[data-tab-content]');
+        const kanbanViewContent = document.getElementById('kanbanViewContent');
+        const listViewContent = document.getElementById('listViewContent');
+        const appointmentTableBody = document.getElementById('appointmentTableBody');
+        const listPaginationContainer = document.getElementById('listPagination');
+
+
+        const columnContents = {
+            sourced: document.getElementById('sourced-column-content'),
+            inprogress: document.getElementById('inprogress-column-content'),
+            // interview: REMOVED
+            hired: document.getElementById('hired-column-content'),
+            rejected: document.getElementById('rejected-column-content'),
+        };
+        const columnCounts = {
+            sourced: document.getElementById('sourced-count'),
+            inprogress: document.getElementById('inprogress-count'),
+            // interview: REMOVED
+            hired: document.getElementById('hired-count'),
+            rejected: document.getElementById('rejected-count'),
+        };
+
+        const showLoading = () => loadingOverlay.classList.remove('hidden');
+        const hideLoading = () => loadingOverlay.classList.add('hidden');
+
+        function showAlert(msg, onConfirm, onCancel, showCancelButton = true) {
+            alertMessageEl.textContent = msg;
+            alertOverlay.classList.remove('hidden');
+            alertOverlay.classList.add('flex');
+            alertOkBtn.onclick = () => {
+                alertOverlay.classList.add('hidden');
+                alertOverlay.classList.remove('flex');
+                if (onConfirm) onConfirm();
+            };
+            if (showCancelButton) {
+                alertCancelBtn.style.display = 'inline-block';
+                alertCancelBtn.onclick = () => {
+                    alertOverlay.classList.add('hidden');
+                    alertOverlay.classList.remove('flex');
+                    if (onCancel) onCancel();
+                };
+            } else {
+                alertCancelBtn.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchInitialData();
+            statusFilterSelect.addEventListener('change', () => {
+                currentPage = 1;
+                renderCurrentView();
+            });
+            dateSortSelect.addEventListener('change', () => {
+                currentPage = 1;
+                renderCurrentView();
+            });
+            nameSearchInput.addEventListener('input', () => {
+                currentPage = 1;
+                renderCurrentView();
+            });
+
+            document.getElementById('exportCsvBtn').addEventListener('click', exportToCsv);
+
+            tabsContainer.addEventListener('click', (e) => {
+                const targetButton = e.target.closest('.tab-button');
+                if (!targetButton) return;
+
+                tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                targetButton.classList.add('active');
+
+                tabContents.forEach(content => content.classList.add('hidden'));
+                const targetContentId = targetButton.dataset.tabTarget;
+                document.querySelector(targetContentId).classList.remove('hidden');
+
+                currentView = targetContentId === '#kanbanViewContent' ? 'kanban' : 'list';
+                currentPage = 1; // Reset page on tab switch
+                renderCurrentView();
+            });
+            // Set initial active tab content
+            document.querySelector('#kanbanViewContent').classList.remove('hidden');
+        });
+
+        async function fetchInitialData() {
+            showLoading();
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=fetchBookings`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const data = await res.json();
+                allAppointmentsData = data.map(d => {
+                    // ถ้ามี firstName/lastName ให้รวมเป็น name
+                    let name = d.name;
+                    if (!name && (d.firstName || d.lastName)) {
+                        name = ((d.firstName || '') + ' ' + (d.lastName || '')).trim();
+                    }
+                    return {
+                        ...d,
+                        name,
+                        parsedDate: new Date(d.date.split('-').reverse().join('-') + 'T' + d.time)
+                    };
+                });
+                renderCurrentView();
+            } catch (err) {
+                console.error("Error fetching initial data:", err);
+                showAlert(`โหลดข้อมูลเริ่มต้นล้มเหลว: ${err.message}`, null, null, false);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function filterAndSortData() {
+            let filtered = [...allAppointmentsData];
+            const searchTerm = nameSearchInput.value.toLowerCase();
+            if (searchTerm) {
+                filtered = filtered.filter(d => d.name.toLowerCase().includes(searchTerm) || d.phonenumber.includes(searchTerm) || d.service.toLowerCase().includes(searchTerm));
+            }
+            const status = statusFilterSelect.value;
+            if (status) {
+                filtered = filtered.filter(d => d.status === status);
+            }
+            const sortOrder = dateSortSelect.value;
+            filtered.sort((a, b) => sortOrder === 'latest' ? b.parsedDate - a.parsedDate : a.parsedDate - b.parsedDate);
+            return filtered;
+        }
+
+        function renderCurrentView() {
+            const dataToRender = filterAndSortData();
+            if (currentView === 'kanban') {
+                renderKanbanView(dataToRender);
+            } else {
+                renderListView(dataToRender);
+            }
+        }
+
+        function renderKanbanView(data) {
+            Object.values(columnContents).forEach(col => col.innerHTML = '');
+            Object.values(columnCounts).forEach(countEl => countEl.textContent = '0');
+            let counts = {
+                sourced: 0,
+                inprogress: 0,
+                /* interview: 0, REMOVED */
+                hired: 0,
+                rejected: 0
+            };
+
+            const placeholder = `<p class="text-xs text-slate-400 text-center p-4 font-thai">ไม่มีข้อมูลที่ตรงกับเงื่อนไข</p>`;
+            if (data.length === 0) {
+                Object.values(columnContents).forEach(col => col.innerHTML = placeholder);
+                return;
+            }
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-3 rounded-md shadow border border-gray-200';
+                let targetColumnKey;
+                switch (item.status) {
+                    case 'รอการยืนยัน':
+                        targetColumnKey = 'sourced';
+                        break;
+                    case 'ยืนยันแล้ว':
+                        targetColumnKey = 'inprogress';
+                        break;
+                    case 'เสร็จสิ้น':
+                        targetColumnKey = 'hired';
+                        break;
+                    case 'ยกเลิก':
+                        targetColumnKey = 'rejected';
+                        break;
+                    default:
+                        targetColumnKey = 'sourced';
+                }
+                counts[targetColumnKey]++;
+                card.innerHTML = getCardOrRowHtml(item, 'card'); // Use helper
+                if (columnContents[targetColumnKey]) {
+                    if (columnContents[targetColumnKey].innerHTML.includes(placeholder.substring(0, 30))) { // Check if placeholder exists
+                        columnContents[targetColumnKey].innerHTML = '';
+                    }
+                    columnContents[targetColumnKey].appendChild(card);
+                }
+            });
+            for (const key in counts) {
+                if (columnCounts[key]) columnCounts[key].textContent = counts[key];
+            }
+            Object.keys(columnContents).forEach(key => {
+                if (counts[key] === 0 && columnContents[key]) {
+                    columnContents[key].innerHTML = placeholder;
+                }
+            });
+            attachActionListeners();
+        }
+
+        function renderListView(data) {
+            appointmentTableBody.innerHTML = '';
+            const totalItems = data.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+            if (paginatedData.length === 0) {
+                appointmentTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500 p-4 font-thai">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>`;
+                renderPagination(0, 0, 0); // Clear pagination
+                return;
+            }
+
+            paginatedData.forEach(item => {
+                const row = appointmentTableBody.insertRow();
+                row.className = "hover:bg-gray-50";
+                row.innerHTML = getCardOrRowHtml(item, 'row'); // Use helper
+            });
+            renderPagination(totalItems, currentPage, totalPages);
+            attachActionListeners();
+        }
+
+        function getCardOrRowHtml(item, type) {
+            const buttonsHtml = `
+                <button class="actionBtn bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-thai" data-action="confirmBooking" data-id="${item.idKey}" ${item.status !== 'รอการยืนยัน' ? 'disabled' : ''}>ยืนยัน</button>
+                <button class="actionBtn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-thai" data-action="cancelBooking" data-id="${item.idKey}" ${['ยกเลิก', 'เสร็จสิ้น'].includes(item.status) ? 'disabled' : ''}>ยกเลิก</button>
+                <button class="actionBtn bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-thai" data-action="completeBooking" data-id="${item.idKey}" ${['ยกเลิก', 'เสร็จสิ้น'].includes(item.status) || item.status === 'รอการยืนยัน' ? 'disabled' : ''}>เสร็จสิ้น</button>
+                <button class="actionBtn bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs font-thai" data-action="sendReminder" data-id="${item.idKey}" ${item.status === 'ยกเลิก' || item.status === 'เสร็จสิ้น' ? 'disabled' : ''}>แจ้งยืนยัน</button> 
+                <button class="actionBtn bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs font-thai" data-action="sendReminderWithoutPayment" data-id="${item.idKey}" ${item.status === 'ยกเลิก' || item.status === 'เสร็จสิ้น' ? 'disabled' : ''}>แจ้งเตือน</button>
+                <button class="actionBtn bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs font-thai" data-action="addDoctorInfo" data-id="${item.idKey}" data-date="${item.date}">เพิ่มข้อมูล</button>
+            `;
+
+            if (type === 'card') {
+                return `
+                    <div class="mb-2">
+                        <h3 class="text-base font-semibold text-slate-800 font-thai truncate" title="${item.name}">${item.name}</h3>
+                        <p class="text-xs text-slate-500 font-thai">📅 ${item.date} @ ${item.time}</p>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-0.5 mb-3 font-thai">
+                        <p><strong>บริการ:</strong> ${item.service}</p>
+                        <p><strong>โทร:</strong> ${item.phonenumber}</p>
+                        <p><strong>เลขบัตร/ประกันสังคม:</strong> ${item.idCardOrSocial || '-'}</p>
+                        <p><strong>โรค/แพ้ยา:</strong> ${item.diseaseAllergy || '-'}</p>
+                        <p class="truncate" title="${item.note || '-'}"><strong>หมายเหตุ:</strong> ${item.note || '-'}</p>
+                        <p><strong>หมอ:</strong> ${item.doctor || '-'}</p>
+                        <p><strong>ห้อง:</strong> ${item.room || '-'}</p>
+                        <p><strong>สถานะ:</strong> ${item.status}</p>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${buttonsHtml}
+                    </div>`;
+            } else if (type === 'row') {
+                return `
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 font-thai">${item.name}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.date} ${item.time}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.service}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.phonenumber}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.idCardOrSocial || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.diseaseAllergy || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.doctor || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.room || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.status}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 font-thai max-w-xs truncate" title="${item.note || '-'}">${item.note || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        <div class="flex flex-wrap gap-1.5">
+                           ${buttonsHtml}
+                        </div>
+                    </td>`;
+            }
+            return '';
+        }
+
+        function renderPagination(totalItems, page, totalPages) {
+            listPaginationContainer.innerHTML = '';
+            if (totalItems === 0) return;
+
+            const startItem = (page - 1) * itemsPerPage + 1;
+            const endItem = Math.min(page * itemsPerPage, totalItems);
+
+            let paginationHTML = `<span class="font-thai">แสดง ${startItem}-${endItem} จาก ${totalItems} รายการ</span>`;
+            paginationHTML += `<div class="flex gap-1">`;
+
+            if (page > 1) {
+                paginationHTML += `<button data-page="${page - 1}" class="page-btn px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50 font-thai">ก่อนหน้า</button>`;
+            } else {
+                paginationHTML += `<button class="px-3 py-1 border border-gray-300 rounded bg-gray-100 text-gray-400 cursor-not-allowed font-thai">ก่อนหน้า</button>`;
+            }
+
+            let startPage = Math.max(1, page - 2);
+            let endPage = Math.min(totalPages, page + 2);
+
+            if (startPage > 1) paginationHTML += `<span class="px-3 py-1">...</span>`;
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `<button data-page="${i}" class="page-btn px-3 py-1 border rounded ${i === page ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white border-gray-300 hover:bg-gray-50'}">${i}</button>`;
+            }
+            if (endPage < totalPages) paginationHTML += `<span class="px-3 py-1">...</span>`;
+
+
+            if (page < totalPages) {
+                paginationHTML += `<button data-page="${page + 1}" class="page-btn px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50 font-thai">ถัดไป</button>`;
+            } else {
+                paginationHTML += `<button class="px-3 py-1 border border-gray-300 rounded bg-gray-100 text-gray-400 cursor-not-allowed font-thai">ถัดไป</button>`;
+            }
+            paginationHTML += `</div>`;
+            listPaginationContainer.innerHTML = paginationHTML;
+
+            document.querySelectorAll('.page-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    currentPage = parseInt(e.target.dataset.page);
+                    renderListView(filterAndSortData());
+                });
+            });
+        }
+
+
+        function attachActionListeners() {
+            document.querySelectorAll('.actionBtn').forEach(btn => {
+                btn.onclick = () => {
+                    if (btn.disabled) return;
+                    const action = btn.dataset.action;
+                    const id = btn.dataset.id;
+
+                    // Handle addDoctorInfo action separately
+                    if (action === 'addDoctorInfo') {
+                        const date = btn.dataset.date;
+                        openDoctorInfoModal(id, date);
+                        return;
+                    }
+
+                    const actionTextMap = {
+                        confirmBooking: 'ยืนยันการนัดหมาย',
+                        cancelBooking: 'ยกเลิกการนัดหมาย',
+                        completeBooking: 'เสร็จสิ้นการนัดหมาย',
+                        sendReminder: 'ส่งแจ้งเตือน', // New action text
+                        sendReminderWithPayment: 'ส่งแจ้งเตือนพร้อมแจ้งชำระเงิน',
+                        sendReminderWithoutPayment: 'ส่งแจ้งเตือน (ฟรี)'
+                    };
+                    confirmAction(`คุณต้องการ "${actionTextMap[action] || action}" ใช่หรือไม่?`, action, id);
+                };
+            });
+        }
+
+        function confirmAction(message, action, id) {
+            showAlert(message, () => {
+                showLoading();
+                fetch(`${WEB_APP_URL}?action=${action}&id=${encodeURIComponent(id)}`, {
+                    method: 'POST'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(text => {
+                        console.log('Action response:', text);
+                        hideLoading();
+                        fetchInitialData();
+                    })
+                    .catch(err => {
+                        console.error('Error during action:', err);
+                        hideLoading();
+                        showAlert(`เกิดข้อผิดพลาดในการดำเนินการ: ${err.message}`);
+                    });
+            });
+        }
+
+        /**
+         * Sanitize a string for CSV format.
+         * - If it contains a comma, newline, or double quote, wrap it in double quotes.
+         * - If it contains double quotes, escape them by doubling them.
+         * @param {string} field The data to sanitize.
+         * @returns {string} The sanitized CSV field.
+         */
+        function sanitizeCsvField(field) {
+            const str = String(field || ''); // Ensure it's a string, handle null/undefined
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                const escapedStr = str.replace(/"/g, '""');
+                return `"${escapedStr}"`;
+            }
+            return str;
+        }
+
+
+        /**
+         * Exports the currently filtered and sorted appointment data to a CSV file.
+         */
+        function exportToCsv() {
+            const dataToExport = filterAndSortData();
+
+            if (dataToExport.length === 0) {
+                showAlert('ไม่มีข้อมูลสำหรับ Export', null, null, false);
+                return;
+            }
+
+            // กำหนดหัวข้อคอลัมน์ (ภาษาไทย)
+
+            const headers = [
+                'ID', 'ชื่อ-สกุล', 'วันที่', 'เวลา', 'บริการ', 'เบอร์โทร',
+                'เลขบัตร/ประกันสังคม', 'โรค/แพ้ยา', 'สถานะ', 'หมายเหตุ'
+            ];
+
+            // แปลงข้อมูลแต่ละ object เป็น row ของ CSV
+            const rows = dataToExport.map(item => [
+                sanitizeCsvField(item.idKey),
+                sanitizeCsvField(item.name),
+                sanitizeCsvField(item.date),
+                sanitizeCsvField(item.time),
+                sanitizeCsvField(item.service),
+                sanitizeCsvField(item.phonenumber),
+                sanitizeCsvField(item.idCardOrSocial),
+                sanitizeCsvField(item.diseaseAllergy),
+                sanitizeCsvField(item.status),
+                sanitizeCsvField(item.note)
+            ].join(','));
+
+            // รวม Header และ Rows ทั้งหมดเข้าด้วยกัน
+            const csvContent = [headers.join(','), ...rows].join('\n');
+
+            // เพิ่ม BOM (Byte Order Mark) เพื่อให้ Excel เปิดไฟล์ UTF-8 (ภาษาไทย) ได้ถูกต้อง
+            const blob = new Blob(['\uFEFF' + csvContent], {
+                type: 'text/csv;charset=utf-8;'
+            });
+
+            // สร้าง Link ชั่วคราวเพื่อดาวน์โหลดไฟล์
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                const today = new Date().toISOString().slice(0, 10);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `appointments-${today}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // ========== ฟังก์ชันสำหรับจัดการ Modal ข้อมูลหมอ ==========
+        const doctorInfoModal = document.getElementById('doctorInfoModal');
+        const cancelDoctorInfoBtn = document.getElementById('cancelDoctorInfoBtn');
+        const doctorInfoForm = document.getElementById('doctorInfoForm');
+        const doctorSelect = document.getElementById('doctorSelect');
+
+        cancelDoctorInfoBtn.addEventListener('click', () => {
+            doctorInfoModal.classList.add('hidden');
+            doctorInfoModal.classList.remove('flex');
+        });
+
+        async function openDoctorInfoModal(appointmentId, appointmentDate) {
+            document.getElementById('appointmentId').value = appointmentId;
+            document.getElementById('appointmentDate').value = appointmentDate;
+
+            // ดึงรายชื่อหมอจากวันที่นั้นๆ
+            showLoading();
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=getDoctorsByDate&date=${appointmentDate}`);
+                const doctors = await response.json();
+
+                doctorSelect.innerHTML = '<option value="">-- เลือกหมอ --</option>';
+                doctors.forEach(doctor => {
+                    const option = document.createElement('option');
+                    option.value = doctor;
+                    option.textContent = doctor;
+                    doctorSelect.appendChild(option);
+                });
+
+                hideLoading();
+                doctorInfoModal.classList.remove('hidden');
+                doctorInfoModal.classList.add('flex');
+            } catch (error) {
+                hideLoading();
+                showAlert('โหลดข้อมูลหมอล้มเหลว: ' + error.message, null, null, false);
+            }
+        }
+
+        doctorInfoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading();
+
+            const formData = new FormData();
+            formData.append('action', 'updateAppointmentDoctor');
+            formData.append('id', document.getElementById('appointmentId').value);
+            formData.append('doctor', doctorSelect.value);
+            formData.append('room', document.getElementById('roomSelect').value);
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.text();
+                hideLoading();
+                showAlert(result, null, null, false);
+                doctorInfoModal.classList.add('hidden');
+                doctorInfoModal.classList.remove('flex');
+                fetchInitialData(); // รีโหลดข้อมูล
+            } catch (error) {
+                hideLoading();
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, null, null, false);
+            }
+        });
+    </script>
+</body>
+
+</html>
