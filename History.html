@@ -210,7 +210,10 @@
             paginationEl.innerHTML = '';
 
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=fetchBookings`);
+                // ดึงสาขาที่เลือกจาก Book.html (ถ้ามี)
+                const selectedBranch = localStorage.getItem('selectedBranch') || '';
+                const branchParam = selectedBranch ? `&branch=${selectedBranch}` : '';
+                const res = await fetch(`${WEB_APP_URL}?action=fetchBookings${branchParam}`);
                 const allData = await res.json();
                 const uid = document.getElementById('useridlineFilter').value;
 

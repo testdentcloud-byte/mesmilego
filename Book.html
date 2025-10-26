@@ -125,9 +125,12 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 1;
             }
+
             50% {
                 opacity: 0.5;
             }
@@ -259,8 +262,10 @@
 
         /* Holiday day style for flatpickr */
         .flatpickr-day.holiday-day {
-            background: #fee2e2 !important; /* red-100 */
-            color: #b91c1c !important;      /* red-700 */
+            background: #fee2e2 !important;
+            /* red-100 */
+            color: #b91c1c !important;
+            /* red-700 */
             border-radius: 0.375rem !important;
         }
 
@@ -408,9 +413,11 @@
                 transform: scale(0) rotate(0deg);
                 opacity: 0;
             }
+
             50% {
                 transform: scale(1.2) rotate(180deg);
             }
+
             100% {
                 transform: scale(1) rotate(180deg);
                 opacity: 1;
@@ -520,8 +527,8 @@
         }
 
         .table-head-cell {
-          background: linear-gradient(135deg, var(--primary) 0%, #00c7bf 50%, #00b8b0 100%);
-    color: #ffffff;
+            background: linear-gradient(135deg, var(--primary) 0%, #00c7bf 50%, #00b8b0 100%);
+            color: #ffffff;
         }
 
         .text-primary {
@@ -614,7 +621,7 @@
     </div>
 
     <div id="appContainer" class="w-full max-w-md mx-auto p-4 flex-1 flex flex-col"
-        style="opacity: 0; transition: opacity 0.5s ease-in-out;">
+        style="opacity: 0; transition: opacity 0.5s ease-in-out; display: none;">
         <div id="header" class="flex items-center border bg-white rounded-lg p-4">
             <img id="greetingAvatar" src alt="Avatar"
                 class="w-12 h-12 rounded-full object-cover border-2 border-element mr-4" />
@@ -623,13 +630,15 @@
                 <h1 id="greetingName" class="text-primary font-bold text-lg"> LINE NAME </h1>
             </div>
             <div class="ml-auto flex items-center gap-2">
-                <select id="languageSwitcher" class="bg-element border-element rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-light">
+                <select id="languageSwitcher"
+                    class="bg-element border-element rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-light">
                     <option value="th">ไทย</option>
                     <option value="en">English</option>
                     <option value="my">မြန်မာ</option>
                     <option value="km">ខ្មែរ</option>
                 </select>
-                <img src="https://llll12t.github.io/Me-smile/me%20smile.jpg" alt="Logo" class="w-10 h-10 object-contain rounded-md" />
+                <img src="https://llll12t.github.io/Me-smile/me%20smile.jpg" alt="Logo"
+                    class="w-10 h-10 object-contain rounded-md" />
             </div>
         </div>
         <div class="grid grid-cols-2 gap-2 mt-4">
@@ -639,91 +648,105 @@
 
         <section id="bookingSection" class="mt-4">
             <form id="bookingForm" novalidate class="flex flex-col flex-1 relative">
-            <div class="step step-active" id="step1">
-                <label class="block mb-3 text-lg text-center text-base font-semibold"
-                    data-translate-key="step1.title"></label>
-                <div id="serviceCards" class="grid grid-cols-2 gap-4 mb-6"></div>
-                <button type="button" id="nextToStep2" class="btn btn-primary w-full"
-                    data-translate-key="step1.button"></button>
-            </div>
+                <div class="step step-active" id="step1">
+                    <label class="block mb-3 text-lg text-center text-base font-semibold"
+                        data-translate-key="step1.title"></label>
+                    <div id="serviceCards" class="grid grid-cols-2 gap-4 mb-6"></div>
+                    <button type="button" id="nextToStep2" class="btn btn-primary w-full"
+                        data-translate-key="step1.button"></button>
+                </div>
 
-            <div class="step hidden" id="step2">
-                <label class="block mb-1 text-center text-base font-semibold"
-                    data-translate-key="step2.dateLabel"></label>
-                <div id="inlineCalendar-wrapper" class="mb-4">
-                    <div id="inlineCalendar"></div>
+                <div class="step hidden" id="step2">
+                    <label class="block mb-1 text-center text-base font-semibold"
+                        data-translate-key="step2.dateLabel"></label>
+                    <div id="inlineCalendar-wrapper" class="mb-4">
+                        <div id="inlineCalendar"></div>
+                    </div>
+                    <label class="block mb-2 text-center text-base font-semibold"
+                        data-translate-key="step2.timeLabel"></label>
+                    <div id="timeDropdown" class="mb-6 min-h-[50px]">
+                        <div class="text-placeholder text-sm text-center py-2 col-span-full"
+                            data-translate-key="step2.placeholder"></div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="button" id="backToStep1" class="btn btn-secondary flex-1"
+                            data-translate-key="step2.back"></button>
+                        <button type="button" id="nextToStep3" class="btn btn-primary flex-1"
+                            data-translate-key="step2.next"></button>
+                    </div>
                 </div>
-                <label class="block mb-2 text-center text-base font-semibold"
-                    data-translate-key="step2.timeLabel"></label>
-                <div id="timeDropdown" class="mb-6 min-h-[50px]">
-                    <div class="text-placeholder text-sm text-center py-2 col-span-full"
-                        data-translate-key="step2.placeholder"></div>
-                </div>
-                <div class="flex space-x-3">
-                    <button type="button" id="backToStep1" class="btn btn-secondary flex-1"
-                        data-translate-key="step2.back"></button>
-                    <button type="button" id="nextToStep3" class="btn btn-primary flex-1"
-                        data-translate-key="step2.next"></button>
-                </div>
-            </div>
 
-            <div class="step hidden" id="step3">
-                <label class="block mb-3 text-lg text-center text-base font-semibold" data-translate-key="step3.title"></label>
-                <div class="flex gap-2 mb-3">
-                    <input type="text" id="first_name" name="first_name" data-translate-key-placeholder="step3.firstNamePlaceholder" placeholder="ชื่อจริง" class="border-element flex-1" required />
-                    <input type="text" id="last_name" name="last_name" data-translate-key-placeholder="step3.lastNamePlaceholder" placeholder="นามสกุล" class="border-element flex-1" required />
+                <div class="step hidden" id="step3">
+                    <label class="block mb-3 text-lg text-center text-base font-semibold"
+                        data-translate-key="step3.title"></label>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="first_name" name="first_name"
+                            data-translate-key-placeholder="step3.firstNamePlaceholder" placeholder="ชื่อจริง"
+                            class="border-element flex-1" required />
+                        <input type="text" id="last_name" name="last_name"
+                            data-translate-key-placeholder="step3.lastNamePlaceholder" placeholder="นามสกุล"
+                            class="border-element flex-1" required />
+                    </div>
+                    <input type="tel" id="phonenumber" name="phonenumber"
+                        data-translate-key-placeholder="step3.phonePlaceholder" placeholder="เบอร์ติดต่อ"
+                        class="mb-3 border-element" required />
+                    <input type="text" id="id_card_or_social" name="id_card_or_social"
+                        data-translate-key-placeholder="step3.idCardOrSocialPlaceholder"
+                        placeholder="เลขที่บัตรประชาชน/เลขที่ประกันสังคม" class="mb-3 border-element" required />
+                    <input type="text" id="disease_allergy" name="disease_allergy"
+                        data-translate-key-placeholder="step3.diseaseAllergyPlaceholder"
+                        placeholder="โรคประจำตัว/อาการแพ้ (ถ้ามี)" class="mb-3 border-element" />
+                    <textarea id="note" name="note" rows="3" data-translate-key-placeholder="step3.notePlaceholder"
+                        placeholder="หมายเหตุ (ถ้ามี)" class="mb-6 p-2 resize-none border-element"></textarea>
+                    <div class="flex space-x-3">
+                        <button type="button" id="backToStep2" class="btn btn-secondary flex-1"
+                            data-translate-key="step3.back"></button>
+                        <button type="button" id="nextToStep4" class="btn btn-primary flex-1"
+                            data-translate-key="step3.next"></button>
+                    </div>
                 </div>
-                <input type="tel" id="phonenumber" name="phonenumber" data-translate-key-placeholder="step3.phonePlaceholder" placeholder="เบอร์ติดต่อ" class="mb-3 border-element" required />
-                <input type="text" id="id_card_or_social" name="id_card_or_social" data-translate-key-placeholder="step3.idCardOrSocialPlaceholder" placeholder="เลขที่บัตรประชาชน/เลขที่ประกันสังคม" class="mb-3 border-element" required />
-                <input type="text" id="disease_allergy" name="disease_allergy" data-translate-key-placeholder="step3.diseaseAllergyPlaceholder" placeholder="โรคประจำตัว/อาการแพ้ (ถ้ามี)" class="mb-3 border-element" />
-                <textarea id="note" name="note" rows="3" data-translate-key-placeholder="step3.notePlaceholder" placeholder="หมายเหตุ (ถ้ามี)" class="mb-6 p-2 resize-none border-element"></textarea>
-                <div class="flex space-x-3">
-                    <button type="button" id="backToStep2" class="btn btn-secondary flex-1" data-translate-key="step3.back"></button>
-                    <button type="button" id="nextToStep4" class="btn btn-primary flex-1" data-translate-key="step3.next"></button>
-                </div>
-            </div>
 
-            <div class="step hidden" id="step4">
-                <label class="block mb-3 text-lg text-center text-base font-semibold"
-                    data-translate-key="step4.title"></label>
-                <div class="bg-card p-4 rounded-lg mb-6 space-y-3">
-                    <div class="flex justify-between items-center border-b pb-2"><span
-                            data-translate-key="step4.serviceLabel"></span><span id="confirmService"
-                            class="font-semibold"></span></div>
-                    <div class="flex justify-between items-center border-b pb-2"><span
-                            data-translate-key="step4.dateLabel"></span><span id="confirmDate"
-                            class="font-semibold"></span></div>
-                    <div class="flex justify-between items-center border-b pb-2"><span
-                            data-translate-key="step4.timeLabel"></span><span id="confirmTime"
-                            class="font-semibold"></span></div>
-                    <div class="flex justify-between items-center border-b pb-2"><span
-                            data-translate-key="step4.nameLabel"></span><span id="confirmName"
-                            class="font-semibold text-right"></span></div>
-                    <div class="flex justify-between items-center border-b pb-2"><span
-                            data-translate-key="step4.phoneLabel"></span><span id="confirmPhone"
-                            class="font-semibold"></span></div>
-                    <div class="flex justify-between items-center border-b pb-2"><span
-                            data-translate-key="step4.idCardOrSocialLabel"></span><span id="confirmIdCardOrSocial"
-                            class="font-semibold text-right"></span></div>
-                    <div class="flex justify-between items-center border-b pb-2"><span
-                            data-translate-key="step4.diseaseAllergyLabel"></span><span id="confirmDiseaseAllergy"
-                            class="font-semibold text-right"></span></div>
-                    <div class="flex justify-between items-start pt-1"><span
-                            data-translate-key="step4.noteLabel"></span><span id="confirmNote"
-                            class="font-semibold text-right max-w-[60%] break-words"></span></div>
+                <div class="step hidden" id="step4">
+                    <label class="block mb-3 text-lg text-center text-base font-semibold"
+                        data-translate-key="step4.title"></label>
+                    <div class="bg-card p-4 rounded-lg mb-6 space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.serviceLabel"></span><span id="confirmService"
+                                class="font-semibold"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.dateLabel"></span><span id="confirmDate"
+                                class="font-semibold"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.timeLabel"></span><span id="confirmTime"
+                                class="font-semibold"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.nameLabel"></span><span id="confirmName"
+                                class="font-semibold text-right"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.phoneLabel"></span><span id="confirmPhone"
+                                class="font-semibold"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.idCardOrSocialLabel"></span><span id="confirmIdCardOrSocial"
+                                class="font-semibold text-right"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.diseaseAllergyLabel"></span><span id="confirmDiseaseAllergy"
+                                class="font-semibold text-right"></span></div>
+                        <div class="flex justify-between items-start pt-1"><span
+                                data-translate-key="step4.noteLabel"></span><span id="confirmNote"
+                                class="font-semibold text-right max-w-[60%] break-words"></span></div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="button" id="backToStep3" class="btn btn-secondary flex-1"
+                            data-translate-key="step4.back"></button>
+                        <button type="submit" id="confirmBooking" class="btn btn-primary flex-1"
+                            data-translate-key="step4.confirm"></button>
+                    </div>
                 </div>
-                <div class="flex space-x-3">
-                    <button type="button" id="backToStep3" class="btn btn-secondary flex-1"
-                        data-translate-key="step4.back"></button>
-                    <button type="submit" id="confirmBooking" class="btn btn-primary flex-1"
-                        data-translate-key="step4.confirm"></button>
-                </div>
-            </div>
 
-            <input type="hidden" id="time" name="time" /><input type="hidden" id="selectedServices"
-                name="selectedServices" /><input type="hidden" id="selectedServiceNames"
-                name="selectedServiceNames" /><input type="hidden" id="userlineid" name="userlineid" value /><input
-                type="hidden" name="action" value="makeBooking" />
+                <input type="hidden" id="time" name="time" /><input type="hidden" id="selectedServices"
+                    name="selectedServices" /><input type="hidden" id="selectedServiceNames"
+                    name="selectedServiceNames" /><input type="hidden" id="userlineid" name="userlineid" value /><input
+                    type="hidden" name="action" value="makeBooking" />
             </form>
         </section>
 
@@ -764,11 +787,24 @@
         </section>
     </div>
 
+    <!-- Branch Selection Section (First Step) -->
+    <div id="branchSection" class="w-full max-w-md mx-auto p-4 flex items-center justify-center min-h-screen">
+        <div class="step step-active w-full mt-8 pb-8">
+            <img src="https://llll12t.github.io/Me-smile/me%20smile.jpg" alt="Logo"
+                class="w-24 h-24 object-container mx-auto m-10 rounded-md" />
+            <label class="block mb-3 text-lg text-center text-base font-semibold">เลือกสาขา</label>
+            <div class="flex flex-col gap-4 w-full max-w-xs mx-auto">
+                <button type="button" class="btn btn-primary branch-btn" data-branch="1">CPF มีนบุรี 1</button>
+                <button type="button" class="btn btn-primary branch-btn" data-branch="2">CPF มีนบุรี 2</button>
+            </div>
+        </div>
+    </div>
+
     <script src="language.js"></script>
     <script src="Config.js"></script>
 
     <script>
-        const ENABLE_LIFF = true; // เปลี่ยนเป็น true เพื่อเปิดใช้งาน LIFF
+        const ENABLE_LIFF = false; // เปลี่ยนเป็น true เพื่อเปิดใช้งาน LIFF
         const $ = (id) => document.getElementById(id);
 
         const defaultLang = 'th';
@@ -830,7 +866,7 @@
 
             return orig;
         }
-        
+
         // ฟังก์ชันอัปเดตภาษาของบริการ
         function updateServiceLanguage(lang, targetContainer = null) {
             const serviceCards = targetContainer || $('#serviceCards');
@@ -850,7 +886,7 @@
 
         // Pre-load only Thai locale for flatpickr (most common)
         const flatpickrLocalesLoaded = {};
-        
+
         function loadFlatpickrLocale(lang) {
             return new Promise((resolve) => {
                 if (lang === 'en' || lang === 'my' || flatpickrLocalesLoaded[lang]) {
@@ -930,7 +966,7 @@
                     timeDropdownEl.innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${tLocal('step2.placeholder')}</div>`;
                 }
             }
-            
+
             // รีโหลดบริการทั้งหมดเมื่อเปลี่ยนภาษา (วิธีเดิม)
             try {
                 console.log('setLanguage: reloading services for language:', currentLang);
@@ -938,7 +974,7 @@
             } catch (e) {
                 console.warn('setLanguage: fetchServiceData failed', e);
             }
-            
+
             // อัปเดตข้อมูลใน step4 ถ้าอยู่ในหน้านั้น
             if (currentVisibleStep === 'step4') {
                 updateConfirmation();
@@ -1075,8 +1111,9 @@
         }
 
         async function fetchMonthAvailability(year, month) {
+            const branch = localStorage.getItem('selectedBranch') || '1';
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=getMonthAvailability&year=${year}&month=${('0' + month).slice(-2)}`);
+                const res = await fetch(`${WEB_APP_URL}?action=getMonthAvailability&year=${year}&month=${('0' + month).slice(-2)}&branch=${branch}`);
                 if (!res.ok) throw new Error();
                 monthAvailability = await res.json();
             } catch {
@@ -1087,8 +1124,9 @@
 
         async function fetchServiceData() {
             setServiceLoading(true);
+            const branch = localStorage.getItem('selectedBranch') || '1';
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=fetchServices`);
+                const res = await fetch(`${WEB_APP_URL}?action=fetchServices&branch=${branch}`);
                 if (!res.ok) throw new Error();
                 const services = await res.json();
                 renderServices(services);
@@ -1106,7 +1144,7 @@
                 servicesLoaded = true;
                 return;
             }
-            
+
             container.innerHTML = '';
             services.forEach((s, index) => {
                 const c = document.createElement('div');
@@ -1116,12 +1154,12 @@
                 c.dataset.originalName = normalizeServiceKey(s.name || '');
                 c.dataset.price = s.price;
                 const translatedName = translateServiceName(c.dataset.originalName, currentLang);
-                
+
                 // สร้าง elements แยกเพื่อให้สามารถอัปเดตได้
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'font-bold text-md mb-1 text-primary-light service-name';
                 nameDiv.textContent = translatedName;
-                
+
                 const checkmarkDiv = document.createElement('div');
                 checkmarkDiv.className = 'checkmark';
                 checkmarkDiv.innerHTML = `
@@ -1129,28 +1167,29 @@
                         <polyline points="20,6 9,17 4,12"></polyline>
                     </svg>
                 `;
-                
+
                 c.appendChild(nameDiv);
                 c.appendChild(checkmarkDiv);
-                
+
                 c.onclick = () => {
                     // จำกัดให้เลือกได้แค่บริการเดียว - ยกเลิกการเลือกอื่นทั้งหมด
                     const allCards = [...container.children];
                     allCards.forEach(card => card.classList.remove('selected'));
-                    
+
                     // เลือกบริการปัจจุบัน
                     c.classList.add('selected');
                     updateSelectedServices();
                 };
                 container.appendChild(c);
             });
-            
+
             servicesLoaded = true;
         }
 
         async function fetchHolidayDates() {
+            const branch = localStorage.getItem('selectedBranch') || '1';
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&getHolidays=true`);
+                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&getHolidays=true&branch=${branch}`);
                 if (!res.ok) throw new Error();
                 const j = await res.json();
                 // รับค่าทั้งวันหยุดพิเศษ และวันหยุดประจำสัปดาห์
@@ -1192,10 +1231,10 @@
                     today.setHours(0, 0, 0, 0);
                     const checkDate = new Date(d);
                     checkDate.setHours(0, 0, 0, 0);
-                    
+
                     // ห้ามเลือกวันปัจจุบันหรือวันที่ผ่านมาแล้ว
                     if (checkDate <= today) return true;
-                    
+
                     const isPermanentHoliday = (window.permanentHolidayDays || []).includes(d.getDay());
                     return isPermanentHoliday || (window.holidayDates || []).includes(k) || monthAvailability[k] === 'full';
                 }],
@@ -1227,7 +1266,8 @@
         async function checkAvailability(dateStr) {
             $('timeDropdown').innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${t('step2.loading')}</div>`;
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&date=${dateStr}`);
+                const branch = localStorage.getItem('selectedBranch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&date=${dateStr}&branch=${branch}`);
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
@@ -1241,15 +1281,15 @@
         function renderTimes(avail) {
             const td = $('timeDropdown');
             td.innerHTML = '';
-            
+
             // กรองเฉพาะช่วงเวลาที่ยังว่าง
             const availableTimes = Object.entries(avail).filter(([_, i]) => i.remaining > 0);
-            
+
             if (!availableTimes.length) {
                 td.innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${t('step2.noTime')}</div>`;
                 return;
             }
-            
+
             availableTimes.forEach(([t, i]) => {
                 const div = document.createElement('div');
                 div.className = 'time-option';
@@ -1271,7 +1311,7 @@
             const sel = [...serviceCardsEl.children].filter((c) => c.classList.contains('selected'));
             $('selectedServices').value = JSON.stringify(sel.map((c) => c.dataset.id));
             $('selectedServiceNames').value = sel.map((c) => translateServiceName(normalizeServiceKey(c.dataset.originalName || c.dataset.name || ''), currentLang)).join(', ');
-            
+
             // Update button state based on selection
             const nextBtn = $('nextToStep2');
             if (nextBtn) {
@@ -1282,7 +1322,7 @@
                     nextBtn.classList.add('opacity-50');
                 }
             }
-            
+
             // Add subtle visual feedback for selection count
             if (sel.length > 0) {
                 serviceCardsEl.style.transform = 'scale(1.01)';
@@ -1297,7 +1337,7 @@
             const selectedCards = [...$('serviceCards').children].filter(c => c.classList.contains('selected'));
             const translatedServiceNames = selectedCards.map(c => translateServiceName(c.dataset.originalName || c.dataset.name, currentLang));
             const raw = translatedServiceNames.join(', ') || '-';
-            
+
             const el = $('confirmService');
             if (raw.includes(', ')) {
                 el.innerHTML = raw.split(', ').map((s) => `<div>${s}</div>`).join('');
@@ -1426,7 +1466,8 @@
             historyState.loading = true;
             setHistoryTableMessage('history.loading');
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=fetchBookings`);
+                const branch = localStorage.getItem('selectedBranch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=fetchBookings&branch=${branch}`);
                 if (!res.ok) throw new Error('NETWORK_ERROR');
                 const allData = await res.json();
                 historyState.records = Array.isArray(allData) ? allData
@@ -1632,11 +1673,11 @@
             showLoading(true);
             const fd = new FormData($('bookingForm'));
             fd.append('date', selectedDate);
-            // ส่งข้อมูลใหม่ - ใช้ || '' เพื่อให้แน่ใจว่าส่งค่าว่างแทน undefined
             fd.append('first_name', $('first_name').value.trim());
             fd.append('last_name', $('last_name').value.trim());
             fd.append('id_card_or_social', $('id_card_or_social').value.trim());
             fd.append('disease_allergy', $('disease_allergy').value.trim() || '');
+            fd.append('branch', localStorage.getItem('selectedBranch') || '1');
             try {
                 const resp = await fetch(WEB_APP_URL, { method: 'POST', body: fd });
                 const text = await resp.text();
@@ -1770,32 +1811,69 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            showLoading(true);
-            $(currentVisibleStep).classList.add('step-active');
-            $(currentVisibleStep).classList.remove('hidden');
+            // Always show branch selector first, never auto-load
+            $('appContainer').style.display = 'none';
+            $('branchSection').style.display = 'block';
+            showLoading(false);
 
-            const savedLang = localStorage.getItem('booking_lang') || navigator.language.split('-')[0];
-            const lang = translations[savedLang] ? savedLang : defaultLang;
-            $('languageSwitcher').value = lang;
-            
-            $('languageSwitcher').addEventListener('change', async (e) => {
-                await setLanguage(e.target.value);
+            // Branch selection logic (button version)
+            const branchBtns = document.querySelectorAll('.branch-btn');
+            branchBtns.forEach(btn => {
+                btn.onclick = async () => {
+                    const branch = btn.dataset.branch;
+                    if (!branch) return;
+                    localStorage.setItem('selectedBranch', branch);
+                    $('branchSection').style.display = 'none';
+                    $('appContainer').style.display = 'flex';
+                    $('appContainer').style.opacity = '1';
+                    await loadBookingUI(branch);
+                };
             });
 
-            // โหลดทุกอย่างพร้อมกันเพื่อความเร็ว
-            const [profile] = await Promise.allSettled([
-                ENABLE_LIFF ? initLiff() : Promise.resolve(offlineProfile()),
-                setLanguage(lang),
-                loadFlatpickrLocale('th'), // โหลดเฉพาะภาษาไทย
-                fetchHolidayDates(),
-                fetchMonthAvailability(new Date().getFullYear(), new Date().getMonth() + 1),
-                fetchServiceData()
-            ]);
+            async function loadBookingUI(branch) {
+                showLoading(true);
+                // Language setup
+                const savedLang = localStorage.getItem('booking_lang') || navigator.language.split('-')[0];
+                const lang = translations[savedLang] ? savedLang : defaultLang;
+                currentLang = lang; // Set current language directly
+                $('languageSwitcher').value = lang;
+                $('languageSwitcher').addEventListener('change', async (e) => {
+                    await setLanguage(e.target.value);
+                });
+                // Load all booking data (removed duplicate fetchServiceData from setLanguage)
+                await Promise.allSettled([
+                    ENABLE_LIFF ? initLiff() : Promise.resolve(offlineProfile()),
+                    loadFlatpickrLocale('th'),
+                    fetchHolidayDates(),
+                    fetchMonthAvailability(new Date().getFullYear(), new Date().getMonth() + 1),
+                    fetchServiceData() // Load services only once
+                ]);
+                // Apply language translations after data is loaded
+                document.querySelectorAll('[data-translate-key], [data-translate-key-placeholder], [data-tkey], [data-tkey-placeholder]').forEach(el => {
+                    if (el.hasAttribute('data-translate-key')) {
+                        el.textContent = t(el.dataset.translateKey);
+                    }
+                    if (el.hasAttribute('data-translate-key-placeholder')) {
+                        el.placeholder = t(el.dataset.translateKeyPlaceholder);
+                    }
+                    if (el.hasAttribute('data-tkey')) {
+                        el.textContent = t(el.dataset.tkey);
+                    }
+                    if (el.hasAttribute('data-tkey-placeholder')) {
+                        el.placeholder = t(el.dataset.tkeyPlaceholder);
+                    }
+                });
+                $('greetingPrefix').textContent = t(getGreeting(new Date().getHours()));
 
-            if (!flatpickrInstance) initCalendar();
-
-            showLoading(false);
-            $('appContainer').style.opacity = 1;
+                if (!flatpickrInstance) initCalendar();
+                // Ensure we're on step1
+                $(currentVisibleStep).classList.add('step-active');
+                $(currentVisibleStep).classList.remove('hidden');
+                // Show UI with transition
+                $('appContainer').style.opacity = 1;
+                showLoading(false);
+            }
+            // ไม่มีการโหลดอัตโนมัติอีกต่อไป - ผู้ใช้ต้องเลือกสาขาทุกครั้ง
         });
     </script>
 </body>

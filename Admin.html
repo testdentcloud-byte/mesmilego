@@ -24,10 +24,11 @@
       --overlay-bg: rgba(0, 184, 176, 0.2);
       --popup-overlay: rgba(0, 0, 0, 0.45);
     }
-        select {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
+
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
     }
 
     body {
@@ -380,7 +381,7 @@
       <form id="doctorInfoForm">
         <input type="hidden" id="appointmentId" />
         <input type="hidden" id="appointmentDate" />
-        
+
         <div class="mb-4">
           <label class="block text-sm font-medium mb-2">เลือกหมอ</label>
           <select id="doctorSelect" required class="w-full border border-gray-300 rounded px-3 py-2">
@@ -409,6 +410,10 @@
     <h1 class="text-2xl font-bold mb-6 text-center">หน้าจัดการนัดหมาย (Admin)</h1>
 
     <div class="filter-panel">
+      <select id="branchSelector" class="p-2 rounded">
+        <option value="1">สาขา 1</option>
+        <option value="2">สาขา 2</option>
+      </select>
       <select id="statusFilter" class="p-2 rounded">
         <option value="">ทั้งหมด</option>
         <option value="รอการยืนยัน">รอการยืนยัน</option>
@@ -422,7 +427,7 @@
       </select>
     </div>
 
-    <div class="overflow-x-auto" >
+    <div class="overflow-x-auto">
       <table class="text-sm">
         <thead>
           <tr>
@@ -531,7 +536,8 @@
     async function loadData() {
       showLoading();
       try {
-        const res = await fetch(`${WEB_APP_URL}?action=fetchBookings`);
+        const branch = localStorage.getItem('branch') || '1';
+        const res = await fetch(`${WEB_APP_URL}?action=fetchBookings&branch=${branch}`);
         const data = await res.json();
 
         // parse & sort
@@ -643,7 +649,7 @@
         btn.onclick = () => {
           const action = btn.dataset.action;
           const id = btn.dataset.id;
-          
+
           // ถ้าเป็น action addDoctorInfo ให้เปิด modal
           if (action === 'addDoctorInfo') {
             const date = btn.dataset.date;
@@ -725,6 +731,48 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // ตรวจสอบสถานะล็อกอิน
+      const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        window.location.href = 'Dashboard/login.html';
+        return;
+      }
+
+      // Branch selector logic with admin permissions
+      const branchSelector = document.getElementById('branchSelector');
+      const savedBranch = localStorage.getItem('branch') || '1';
+
+      // ตรวจสอบสิทธิ์สาขาของแอดมิน
+      const adminBranchesStr = localStorage.getItem('adminBranches');
+      // ถ้าไม่มีข้อมูล ให้แสดงทุกสาขาเป็น default
+      const adminBranches = adminBranchesStr ? JSON.parse(adminBranchesStr) : ['all'];
+
+      // ถ้าแอดมินดูแลเฉพาะบางสาขา ให้กรองตัวเลือก
+      if (adminBranches[0] !== 'all') {
+        // ลบตัวเลือกที่ไม่อยู่ในสิทธิ์
+        const options = branchSelector.querySelectorAll('option');
+        options.forEach(opt => {
+          if (!adminBranches.includes(opt.value)) {
+            opt.remove();
+          }
+        });
+
+        // ถ้าสาขาปัจจุบันไม่อยู่ในสิทธิ์ ให้เปลี่ยนเป็นสาขาแรกที่มีสิทธิ์
+        if (!adminBranches.includes(savedBranch)) {
+          localStorage.setItem('branch', adminBranches[0]);
+          branchSelector.value = adminBranches[0];
+        } else {
+          branchSelector.value = savedBranch;
+        }
+      } else {
+        branchSelector.value = savedBranch;
+      }
+
+      branchSelector.addEventListener('change', function () {
+        localStorage.setItem('branch', this.value);
+        loadData();
+      });
+
       ['statusFilter', 'dateSort'].forEach(id => {
         document.getElementById(id).addEventListener('change', loadData);
       });
@@ -748,11 +796,13 @@
         e.preventDefault();
         showLoading();
 
+        const branch = localStorage.getItem('branch') || '1';
         const formData = new FormData();
         formData.append('action', 'updateAppointmentDoctor');
         formData.append('id', document.getElementById('appointmentId').value);
         formData.append('doctor', doctorSelect.value);
         formData.append('room', document.getElementById('roomSelect').value);
+        formData.append('branch', branch);
 
         try {
           const response = await fetch(WEB_APP_URL, {
@@ -786,16 +836,19 @@
     async function openDoctorInfoModal(appointmentId, appointmentDate) {
       const doctorInfoModal = document.getElementById('doctorInfoModal');
       const doctorSelect = document.getElementById('doctorSelect');
-      
+
       document.getElementById('appointmentId').value = appointmentId;
       document.getElementById('appointmentDate').value = appointmentDate;
-      
-      // ดึงรายชื่อหมอจากวันที่นั้นๆ
+
+      // ดึง branch จากสาขาที่เลือกอยู่
+      const branch = localStorage.getItem('branch') || '1';
+
+      // ดึงรายชื่อหมอจากวันที่นั้นๆ ตามสาขา
       showLoading();
       try {
-        const response = await fetch(`${WEB_APP_URL}?action=getDoctorsByDate&date=${appointmentDate}`);
+        const response = await fetch(`${WEB_APP_URL}?action=getDoctorsByDate&date=${appointmentDate}&branch=${branch}`);
         const doctors = await response.json();
-        
+
         doctorSelect.innerHTML = '<option value="">-- เลือกหมอ --</option>';
         doctors.forEach(doctor => {
           const option = document.createElement('option');
@@ -803,7 +856,7 @@
           option.textContent = doctor;
           doctorSelect.appendChild(option);
         });
-        
+
         hideLoading();
         doctorInfoModal.classList.remove('hidden');
         doctorInfoModal.classList.add('flex');
