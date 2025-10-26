@@ -206,11 +206,14 @@
                         class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button class="text-slate-500 hover:text-slate-700"><svg xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg></button>
+                    <div class="flex items-center gap-2">
+                        <label for="branchSelector" class="text-sm font-medium text-slate-700 font-thai">โรงงาน :</label>
+                        <select id="branchSelector" class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 font-thai">
+                            <option value="1">CPF มีนบุรี 1</option>
+                            <option value="2">CPF มีนบุรี 2</option>
+                        </select>
+                    </div>
+
                 </div>
             </header>
 
@@ -258,6 +261,15 @@
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                             Export CSV
+                        </button>
+                        <button id="exportAllBranchesBtn"
+                            class="flex items-center gap-2 p-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-thai">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Export ทุกสาขา
                         </button>
                     </div>
                 </div>
@@ -423,6 +435,8 @@
         function logout() {
             localStorage.removeItem('isAdminLoggedIn');
             localStorage.removeItem('adminName');
+            localStorage.removeItem('adminBranches');
+            localStorage.removeItem('branch');
             window.location.href = 'login.html';
         }
 
@@ -490,6 +504,40 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Branch selector logic with admin permissions
+            const branchSelector = document.getElementById('branchSelector');
+            const savedBranch = localStorage.getItem('branch') || '1';
+            
+            // ตรวจสอบสิทธิ์สาขาของแอดมิน
+            const adminBranchesStr = localStorage.getItem('adminBranches');
+            const adminBranches = adminBranchesStr ? JSON.parse(adminBranchesStr) : ['1'];
+            
+            // ถ้าแอดมินดูแลเฉพาะบางสาขา ให้กรองตัวเลือก
+            if (adminBranches[0] !== 'all') {
+                // ลบตัวเลือกที่ไม่อยู่ในสิทธิ์
+                const options = branchSelector.querySelectorAll('option');
+                options.forEach(opt => {
+                    if (!adminBranches.includes(opt.value)) {
+                        opt.remove();
+                    }
+                });
+                
+                // ถ้าสาขาปัจจุบันไม่อยู่ในสิทธิ์ ให้เปลี่ยนเป็นสาขาแรกที่มีสิทธิ์
+                if (!adminBranches.includes(savedBranch)) {
+                    localStorage.setItem('branch', adminBranches[0]);
+                    branchSelector.value = adminBranches[0];
+                } else {
+                    branchSelector.value = savedBranch;
+                }
+            } else {
+                branchSelector.value = savedBranch;
+            }
+            
+            branchSelector.addEventListener('change', function() {
+                localStorage.setItem('branch', this.value);
+                location.reload();
+            });
+
             fetchInitialData();
             statusFilterSelect.addEventListener('change', () => {
                 currentPage = 1;
@@ -505,6 +553,75 @@
             });
 
             document.getElementById('exportCsvBtn').addEventListener('click', exportToCsv);
+            document.getElementById('exportAllBranchesBtn').addEventListener('click', exportAllBranchesToCsv);
+        /**
+         * Export all branches (hardcoded ['1','2'] but can be extended)
+         */
+        async function exportAllBranchesToCsv() {
+            showLoading();
+            try {
+                // สามารถเพิ่มสาขาได้ที่นี่ เช่น ['1','2','3','4']
+                const branches = ['1', '2'];
+                let allData = [];
+                for (const branch of branches) {
+                    const res = await fetch(`${WEB_APP_URL}?action=fetchBookings&branch=${branch}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        allData = allData.concat(data.map(d => ({ ...d, branch })));
+                    }
+                }
+                if (allData.length === 0) {
+                    showAlert('ไม่มีข้อมูลสำหรับ Export', null, null, false);
+                    hideLoading();
+                    return;
+                }
+                // กำหนดหัวข้อคอลัมน์ (ภาษาไทย) ตามที่ผู้ใช้ต้องการ
+                const headers = [
+                    'รหัส', 'ไลน์ไอดี', 'ชื่อ', 'นามสกุล', 'เบอร์โทร', 'เลขบัตร/ประกัน',
+                    'โรค/แพ้', 'หมายเหตุ', 'รายการบริการ', 'ราคารวม', 'วันที่', 'เวลา',
+                    'สถานะ', 'เวลาบันทึก', 'CalendarEventId', 'หมอ', 'ห้อง', 'สาขา'
+                ];
+                const rows = allData.map(item => [
+                    sanitizeCsvField(item.idKey),
+                    sanitizeCsvField(item.userlineid),
+                    sanitizeCsvField(item.firstName),
+                    sanitizeCsvField(item.lastName),
+                    sanitizeCsvField(item.phonenumber),
+                    sanitizeCsvField(item.idCardOrSocial),
+                    sanitizeCsvField(item.diseaseAllergy),
+                    sanitizeCsvField(item.note),
+                    sanitizeCsvField(item.service),
+                    sanitizeCsvField(item.price),
+                    sanitizeCsvField(item.date),
+                    sanitizeCsvField(item.time),
+                    sanitizeCsvField(item.status),
+                    sanitizeCsvField(item.timestamp),
+                    sanitizeCsvField(item.calendarEventId),
+                    sanitizeCsvField(item.doctor),
+                    sanitizeCsvField(item.room),
+                    sanitizeCsvField(item.branch)
+                ].join(','));
+                const csvContent = [headers.join(','), ...rows].join('\n');
+                const blob = new Blob(['\uFEFF' + csvContent], {
+                    type: 'text/csv;charset=utf-8;'
+                });
+                const link = document.createElement("a");
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    const today = new Date().toISOString().slice(0, 10);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `appointments-all-branches-${today}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            } catch (err) {
+                showAlert('เกิดข้อผิดพลาด: ' + err.message, null, null, false);
+            } finally {
+                hideLoading();
+            }
+        }
 
             tabsContainer.addEventListener('click', (e) => {
                 const targetButton = e.target.closest('.tab-button');
@@ -528,7 +645,8 @@
         async function fetchInitialData() {
             showLoading();
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=fetchBookings`);
+                const branch = localStorage.getItem('branch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=fetchBookings&branch=${branch}`);
                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                 const data = await res.json();
                 allAppointmentsData = data.map(d => {
@@ -778,7 +896,11 @@
         function confirmAction(message, action, id) {
             showAlert(message, () => {
                 showLoading();
-                fetch(`${WEB_APP_URL}?action=${action}&id=${encodeURIComponent(id)}`, {
+                // ค้นหา branch จากข้อมูลการจอง
+                const appointment = allAppointmentsData.find(appt => appt.idKey === id);
+                const branch = appointment && appointment.branch ? appointment.branch : (localStorage.getItem('branch') || '1');
+                
+                fetch(`${WEB_APP_URL}?action=${action}&id=${encodeURIComponent(id)}&branch=${branch}`, {
                     method: 'POST'
                 })
                     .then(response => {
@@ -828,25 +950,33 @@
                 return;
             }
 
-            // กำหนดหัวข้อคอลัมน์ (ภาษาไทย)
-
+            // กำหนดหัวข้อคอลัมน์ (ภาษาไทย) ตามที่ผู้ใช้ต้องการ
             const headers = [
-                'ID', 'ชื่อ-สกุล', 'วันที่', 'เวลา', 'บริการ', 'เบอร์โทร',
-                'เลขบัตร/ประกันสังคม', 'โรค/แพ้ยา', 'สถานะ', 'หมายเหตุ'
+                'รหัส', 'ไลน์ไอดี', 'ชื่อ', 'นามสกุล', 'เบอร์โทร', 'เลขบัตร/ประกัน',
+                'โรค/แพ้', 'หมายเหตุ', 'รายการบริการ', 'ราคารวม', 'วันที่', 'เวลา',
+                'สถานะ', 'เวลาบันทึก', 'CalendarEventId', 'หมอ', 'ห้อง', 'สาขา'
             ];
 
             // แปลงข้อมูลแต่ละ object เป็น row ของ CSV
             const rows = dataToExport.map(item => [
                 sanitizeCsvField(item.idKey),
-                sanitizeCsvField(item.name),
-                sanitizeCsvField(item.date),
-                sanitizeCsvField(item.time),
-                sanitizeCsvField(item.service),
+                sanitizeCsvField(item.userlineid),
+                sanitizeCsvField(item.firstName),
+                sanitizeCsvField(item.lastName),
                 sanitizeCsvField(item.phonenumber),
                 sanitizeCsvField(item.idCardOrSocial),
                 sanitizeCsvField(item.diseaseAllergy),
+                sanitizeCsvField(item.note),
+                sanitizeCsvField(item.service),
+                sanitizeCsvField(item.price),
+                sanitizeCsvField(item.date),
+                sanitizeCsvField(item.time),
                 sanitizeCsvField(item.status),
-                sanitizeCsvField(item.note)
+                sanitizeCsvField(item.timestamp),
+                sanitizeCsvField(item.calendarEventId),
+                sanitizeCsvField(item.doctor),
+                sanitizeCsvField(item.room),
+                sanitizeCsvField(item.branch)
             ].join(','));
 
             // รวม Header และ Rows ทั้งหมดเข้าด้วยกัน
@@ -886,10 +1016,14 @@
             document.getElementById('appointmentId').value = appointmentId;
             document.getElementById('appointmentDate').value = appointmentDate;
 
-            // ดึงรายชื่อหมอจากวันที่นั้นๆ
+            // ค้นหาข้อมูลการจองเพื่อดึง branch
+            const appointment = allAppointmentsData.find(appt => appt.idKey === appointmentId);
+            const branch = appointment && appointment.branch ? appointment.branch : (localStorage.getItem('branch') || '1');
+
+            // ดึงรายชื่อหมอจากวันที่นั้นๆ ตามสาขา
             showLoading();
             try {
-                const response = await fetch(`${WEB_APP_URL}?action=getDoctorsByDate&date=${appointmentDate}`);
+                const response = await fetch(`${WEB_APP_URL}?action=getDoctorsByDate&date=${appointmentDate}&branch=${branch}`);
                 const doctors = await response.json();
 
                 doctorSelect.innerHTML = '<option value="">-- เลือกหมอ --</option>';
@@ -913,11 +1047,16 @@
             e.preventDefault();
             showLoading();
 
+            const appointmentId = document.getElementById('appointmentId').value;
+            const appointment = allAppointmentsData.find(appt => appt.idKey === appointmentId);
+            const branch = appointment && appointment.branch ? appointment.branch : (localStorage.getItem('branch') || '1');
+
             const formData = new FormData();
             formData.append('action', 'updateAppointmentDoctor');
-            formData.append('id', document.getElementById('appointmentId').value);
+            formData.append('id', appointmentId);
             formData.append('doctor', doctorSelect.value);
             formData.append('room', document.getElementById('roomSelect').value);
+            formData.append('branch', branch);
 
             try {
                 const response = await fetch(WEB_APP_URL, {

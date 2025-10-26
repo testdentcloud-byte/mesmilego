@@ -52,11 +52,18 @@
         const resp = await fetch(url, { method: 'GET', mode: 'cors' });
         if (!resp.ok) throw new Error('Network response was not ok');
 
-        const data = await resp.json(); // { success: true/false, message: '...', displayName: 'Teeranan kamroi' }
+        const data = await resp.json(); // { success: true/false, message: '...', displayName: '...', branches: [...], defaultBranch: '1' }
         if (data.success) {
-          // เก็บ status และ displayName
+          // เก็บ status, displayName, branches และ defaultBranch
           localStorage.setItem('isAdminLoggedIn', 'true');
-          localStorage.setItem('adminName', data.displayName); // เปลี่ยนกุญแจเป็น 'adminName'
+          localStorage.setItem('adminName', data.displayName);
+          localStorage.setItem('adminBranches', JSON.stringify(data.branches || ['1'])); // รายการสาขาที่ดูแล
+          // ตั้งค่าสาขาเริ่มต้นถ้ายังไม่มี หรือสาขาปัจจุบันไม่อยู่ในรายการที่ดูแล
+          const currentBranch = localStorage.getItem('branch');
+          const allowedBranches = data.branches || ['1'];
+          if (!currentBranch || (allowedBranches[0] !== 'all' && !allowedBranches.includes(currentBranch))) {
+            localStorage.setItem('branch', data.defaultBranch || '1');
+          }
           // ไปที่หน้า member.html (Dashboard)
           window.location.href = 'appointment.html';
         } else {

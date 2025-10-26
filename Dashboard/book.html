@@ -284,6 +284,13 @@
     <main class="ml-64 flex-1 flex flex-col">
         <header class="bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-20">
             <h1 class="text-xl font-semibold text-slate-700 font-thai">สร้างการจองใหม่</h1>
+                <div class="flex items-center gap-2">
+                    <label for="branchSelector" class="text-sm font-medium text-slate-700 font-thai">โรงงาน :</label>
+                    <select id="branchSelector" class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 font-thai">
+                        <option value="1">CPF มีนบุรี 1</option>
+                        <option value="2">CPF มีนบุรี 2</option>
+                    </select>
+                </div>
         </header>
 
         <div class="flex-1 p-6 overflow-y-auto">
@@ -477,12 +484,48 @@
             // กรณีล็อกอินแล้ว ให้มาดึงชื่อ admin และโหลดข้อมูลสมาชิกตามเดิม
             const adminName = localStorage.getItem('adminName') || 'Admin';
             document.getElementById('adminName').textContent = adminName;
+
+            // Branch selector logic with admin permissions
+            const branchSelector = document.getElementById('branchSelector');
+            const savedBranch = localStorage.getItem('branch') || '1';
+            
+            // ตรวจสอบสิทธิ์สาขาของแอดมิน
+            const adminBranchesStr = localStorage.getItem('adminBranches');
+            const adminBranches = adminBranchesStr ? JSON.parse(adminBranchesStr) : ['1'];
+            
+            // ถ้าแอดมินดูแลเฉพาะบางสาขา ให้กรองตัวเลือก
+            if (adminBranches[0] !== 'all') {
+                // ลบตัวเลือกที่ไม่อยู่ในสิทธิ์
+                const options = branchSelector.querySelectorAll('option');
+                options.forEach(opt => {
+                    if (!adminBranches.includes(opt.value)) {
+                        opt.remove();
+                    }
+                });
+                
+                // ถ้าสาขาปัจจุบันไม่อยู่ในสิทธิ์ ให้เปลี่ยนเป็นสาขาแรกที่มีสิทธิ์
+                if (!adminBranches.includes(savedBranch)) {
+                    localStorage.setItem('branch', adminBranches[0]);
+                    branchSelector.value = adminBranches[0];
+                } else {
+                    branchSelector.value = savedBranch;
+                }
+            } else {
+                branchSelector.value = savedBranch;
+            }
+            
+            branchSelector.addEventListener('change', function() {
+                localStorage.setItem('branch', this.value);
+                location.reload();
+            });
         });
 
         // ฟังก์ชัน Logout (เหมือนเดิม)
         function logout() {
             localStorage.removeItem('isAdminLoggedIn');
             localStorage.removeItem('adminName');
+            localStorage.removeItem('adminBranches');
+            localStorage.removeItem('branch');
             window.location.href = 'login.html';
         }
 
@@ -557,7 +600,8 @@
 
         async function fetchServiceData() {
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=fetchServices`);
+                const branch = localStorage.getItem('branch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=fetchServices&branch=${branch}`);
                 if (!res.ok) throw new Error('Network error fetching services');
                 const services = await res.json();
                 const container = $('serviceCards');
@@ -602,7 +646,8 @@
 
         async function fetchHolidayDates() {
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&getHolidays=true`);
+                const branch = localStorage.getItem('branch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&getHolidays=true&branch=${branch}`);
                 if (!res.ok) throw new Error('Network error fetching holidays');
                 const j = await res.json();
                 // รับค่าทั้งวันหยุดพิเศษ และวันหยุดประจำสัปดาห์
@@ -672,7 +717,8 @@
         async function checkAvailability(dateStr) { // dateStr is YYYY-MM-DD
             $('timeDropdown').innerHTML = `<p class="col-span-full text-sm text-slate-500 text-center py-4 font-thai">กำลังตรวจสอบเวลาว่าง...</p>`;
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&date=${dateStr}`);
+                const branch = localStorage.getItem('branch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&date=${dateStr}&branch=${branch}`);
                 if (!res.ok) throw new Error('Network error checking availability');
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
@@ -775,6 +821,9 @@
             showLoading(true);
             const formData = new FormData($('bookingForm'));
             formData.append('date', selectedDate);
+            // เพิ่ม branch parameter
+            const branch = localStorage.getItem('branch') || '1';
+            formData.append('branch', branch);
             // ส่ง key อังกฤษเหมือนฝั่งลูกค้า
             formData.set('first_name', $('firstName').value.trim());
             formData.set('last_name', $('lastName').value.trim());

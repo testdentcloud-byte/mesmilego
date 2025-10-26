@@ -139,6 +139,13 @@
                 </span>
                 <input type="text" id="memberSearch" placeholder="ค้นหาสมาชิก..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 font-thai">
             </div>
+            <div class="flex items-center gap-2">
+                <label for="branchSelector" class="text-sm font-medium text-slate-700 font-thai">สาขา:</label>
+                <select id="branchSelector" class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-green-500 font-thai">
+                    <option value="1">สาขา 1</option>
+                    <option value="2">สาขา 2</option>
+                </select>
+            </div>
 
         </header>
 
@@ -225,8 +232,45 @@
         function logout() {
         localStorage.removeItem('isAdminLoggedIn');
         localStorage.removeItem('adminName');
+        localStorage.removeItem('adminBranches');
+        localStorage.removeItem('branch');
         window.location.href = 'login.html';
         }
+
+        // Branch selector logic with admin permissions
+        const branchSelector = document.getElementById('branchSelector');
+        const savedBranch = localStorage.getItem('branch') || '1';
+        
+        // ตรวจสอบสิทธิ์สาขาของแอดมิน
+        const adminBranchesStr = localStorage.getItem('adminBranches');
+        const adminBranches = adminBranchesStr ? JSON.parse(adminBranchesStr) : ['1'];
+        
+        // ถ้าแอดมินดูแลเฉพาะบางสาขา ให้กรองตัวเลือก
+        if (adminBranches[0] !== 'all') {
+            // ลบตัวเลือกที่ไม่อยู่ในสิทธิ์
+            const options = branchSelector.querySelectorAll('option');
+            options.forEach(opt => {
+                if (!adminBranches.includes(opt.value)) {
+                    opt.remove();
+                }
+            });
+            
+            // ถ้าสาขาปัจจุบันไม่อยู่ในสิทธิ์ ให้เปลี่ยนเป็นสาขาแรกที่มีสิทธิ์
+            if (!adminBranches.includes(savedBranch)) {
+                localStorage.setItem('branch', adminBranches[0]);
+                branchSelector.value = adminBranches[0];
+            } else {
+                branchSelector.value = savedBranch;
+            }
+        } else {
+            branchSelector.value = savedBranch;
+        }
+        
+        branchSelector.addEventListener('change', function() {
+            localStorage.setItem('branch', this.value);
+            location.reload();
+        });
+
         const memberSearchInput = document.getElementById('memberSearch');
         let allMembersData = []; // Store all members for client-side search
 
@@ -258,6 +302,8 @@
             data['เลขบัตร/ประกัน'] = this['เลขบัตร/ประกัน'].value;
             data['โรค/แพ้'] = this['โรค/แพ้'].value;
             data['หมายเหตุ'] = this['หมายเหตุ'].value;
+            // เพิ่ม branch
+            data['branch'] = localStorage.getItem('branch') || '1';
 
             Swal.fire({
                 title: 'กำลังบันทึก...',
@@ -293,7 +339,8 @@
         });
 
         function loadMembers() {
-            fetch(`${CONFIG_URL}?action=fetchMemberData`)
+            const branch = localStorage.getItem('branch') || '1';
+            fetch(`${CONFIG_URL}?action=fetchMemberData&branch=${branch}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`Network response was not ok: ${response.statusText}`);
@@ -417,7 +464,8 @@
                             method: 'POST',
                             body: JSON.stringify({
                                     action: 'deleteMember',
-                                    id: id
+                                    id: id,
+                                    branch: localStorage.getItem('branch') || '1'
                                 }) // Ensure 'id' matches GAS parameter
                         })
                         .then(response => response.json())

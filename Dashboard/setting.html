@@ -143,6 +143,13 @@
     <main class="ml-64 flex-1 flex flex-col">
         <header class="bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-20">
             <h1 class="text-xl font-semibold text-slate-700 font-thai">ตั้งค่าทั่วไป</h1>
+            <div class="flex gap-2 items-center">
+               <label for="branchSelector" class="text-sm font-medium text-slate-700 font-thai">โรงงาน :</label>
+                <select id="branchDropdown" class=" border font-medium py-1 px-4 rounded-md text-sm font-thai">
+                    <option value="1">CPF มีนบุรี 1</option>
+                    <option value="2">CPF มีนบุรี 2</option>
+                </select>
+            </div>
         </header>
 
         <div class="flex-1 p-6 overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -284,23 +291,30 @@
     <script src="Config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-        // ตรวจสอบสถานะล็อกอิน
-        const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
-        if (!isLoggedIn) {
-        // ถ้าไม่ได้ล็อกอิน ให้เด้งไปหน้า login ทันที
+    // Branch dropdown logic
+    const branchDropdown = document.getElementById('branchDropdown');
+    const savedBranch = localStorage.getItem('branch') || '1';
+    branchDropdown.value = savedBranch;
+    branchDropdown.addEventListener('change', function() {
+        localStorage.setItem('branch', branchDropdown.value);
+        location.reload();
+    });
+
+    // ตรวจสอบสถานะล็อกอิน
+    const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+    if (!isLoggedIn) {
         window.location.href = 'login.html';
-        return; // หยุดการทำงานที่เหลือบนหน้านี้
-        }
-        
-        // กรณีล็อกอินแล้ว ให้มาดึงชื่อ admin และโหลดข้อมูลสมาชิกตามเดิม
-        const adminName = localStorage.getItem('adminName') || 'Admin';
-        document.getElementById('adminName').textContent = adminName;
-        });
-        
-        // ฟังก์ชัน Logout (เหมือนเดิม)
-        function logout() {
+        return;
+    }
+    const adminName = localStorage.getItem('adminName') || 'Admin';
+    document.getElementById('adminName').textContent = adminName;
+});
+
+function logout() {
         localStorage.removeItem('isAdminLoggedIn');
         localStorage.removeItem('adminName');
+        localStorage.removeItem('adminBranches');
+        localStorage.removeItem('branch');
         window.location.href = 'login.html';
         }
         const timeSlotTableContainer = document.getElementById('timeSlotTableContainer');
@@ -386,11 +400,9 @@
 
         function loadTimeSlots() {
             timeSlotTableContainer.innerHTML = loadingHTML; // Show loading message
-            fetch(`${CONFIG_URL}?action=fetchTimeSlots`)
-                .then(r => {
-                    if (!r.ok) throw new Error('Network response failed');
-                    return r.json()
-                })
+            const branch = localStorage.getItem('branch') || '1';
+            fetch(`${CONFIG_URL}?action=fetchTimeSlots&branch=${branch}`)
+                .then(r => r.json())
                 .then(data => {
                     let html = `
           <table class="min-w-full divide-y divide-slate-200 text-sm">
@@ -423,7 +435,8 @@
         }
 
         function editTimeSlot(id) {
-            fetch(`${CONFIG_URL}?action=fetchTimeSlots`).then(r => r.json()).then(data => {
+            const branch = localStorage.getItem('branch') || '1';
+            fetch(`${CONFIG_URL}?action=fetchTimeSlots&branch=${branch}`).then(r => r.json()).then(data => {
                 const t = data.find(x => x['ไอดี'] === id);
                 if (!t) return Swal.fire({
                     icon: 'warning',
@@ -454,11 +467,13 @@
                 }
             }).then(res => {
                 if (res.isConfirmed) {
+                    const branch = localStorage.getItem('branch') || '1';
                     fetch(CONFIG_URL, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'deleteTimeSlot',
-                            id
+                            id,
+                            branch: branch
                         })
                     }).then(r => r.json()).then(result => {
                         if (result.success) {
@@ -512,7 +527,8 @@
 
         function loadHolidays() {
             holidayTableContainer.innerHTML = loadingHTML;
-            fetch(`${CONFIG_URL}?action=fetchHolidays`).then(r => r.json()).then(data => {
+            const branch = localStorage.getItem('branch') || '1';
+            fetch(`${CONFIG_URL}?action=fetchHolidays&branch=${branch}`).then(r => r.json()).then(data => {
                 let html = `
           <table class="min-w-full divide-y divide-slate-200 text-sm">
             <thead class="bg-slate-50"><tr>
@@ -539,11 +555,13 @@
                 showCancelButton: true
             }).then(res => {
                 if (res.isConfirmed) {
+                    const branch = localStorage.getItem('branch') || '1';
                     fetch(CONFIG_URL, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'deleteHoliday',
-                            date
+                            date,
+                            branch: branch
                         })
                     }).then(() => {
                         loadHolidays();
@@ -556,18 +574,15 @@
 // ฟังก์ชันสำหรับโหลดค่าวันหยุดที่ตั้งไว้มาแสดงใน Checkbox
 async function loadPermanentHolidays() {
     try {
-        const response = await fetch(`${CONFIG_URL}?action=fetchGeneralSettings`);
+        const branch = localStorage.getItem('branch') || '1';
+        const response = await fetch(`${CONFIG_URL}?action=fetchGeneralSettings&branch=${branch}`);
         if (!response.ok) throw new Error('Network response was not ok.');
-        
         const data = await response.json();
-        const holidayString = data.permanentHolidays || ''; // e.g., "6,0"
-        const savedDays = holidayString.split(',').filter(d => d.trim() !== ''); // e.g., ['6', '0']
-
-        // วนลูปเพื่อเช็ค/ไม่เช็ค Checkbox ตามค่าที่บันทึกไว้
+        const holidayString = data.permanentHolidays || '';
+        const savedDays = holidayString.split(',').filter(d => d.trim() !== '');
         document.querySelectorAll('.day-checkbox').forEach(checkbox => {
             checkbox.checked = savedDays.includes(checkbox.value);
         });
-
     } catch (error) {
         console.error('Error loading permanent holidays:', error);
         Swal.fire({icon: 'error', title: 'ผิดพลาด!', text: 'ไม่สามารถโหลดการตั้งค่าวันหยุดประจำได้', customClass: { popup: 'font-thai' }});
@@ -576,12 +591,10 @@ async function loadPermanentHolidays() {
 
 // ฟังก์ชันสำหรับบันทึกค่าใหม่
 async function savePermanentHolidays() {
-    // รวบรวมค่าจาก Checkbox ที่ถูกเลือก
     const selectedDays = [];
     document.querySelectorAll('.day-checkbox:checked').forEach(checkbox => {
         selectedDays.push(checkbox.value);
     });
-
     Swal.fire({
         title: 'กำลังบันทึก...',
         text: 'กรุณารอสักครู่',
@@ -589,16 +602,16 @@ async function savePermanentHolidays() {
         didOpen: () => Swal.showLoading(),
         customClass: { popup: 'font-thai' }
     });
-
     try {
+        const branch = localStorage.getItem('branch') || '1';
         const response = await fetch(CONFIG_URL, {
             method: 'POST',
             body: JSON.stringify({
                 action: 'updatePermanentHolidays',
-                data: selectedDays // ส่ง Array e.g., ['6', '0'] ไปที่ Backend
+                data: selectedDays,
+                branch: branch
             })
         });
-
         const result = await response.json();
         if (result.success) {
             Swal.fire({icon: 'success', title: 'สำเร็จ!', text: result.message, customClass: { popup: 'font-thai' }});
@@ -784,7 +797,7 @@ async function savePermanentHolidays() {
                     }).catch(err => Swal.fire({
                         icon: 'error',
                         title: 'ผิดพลาด',
-                        text: `การเชื่อมต่อล้มเหลว: ${err}`,
+                        text: `การเชื่อมต่าล้มเหลว: ${err}`,
                         customClass: {
                             popup: 'font-thai'
                         }

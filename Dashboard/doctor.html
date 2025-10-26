@@ -168,6 +168,7 @@
                                     <th class="p-3 text-left">หมอ 1</th>
                                     <th class="p-3 text-left">หมอ 2</th>
                                     <th class="p-3 text-left">หมอ 3</th>
+                                    <th class="p-3 text-left">หมอ 4</th>
                                     <th class="p-3 text-center">จัดการ</th>
                                 </tr>
                             </thead>
@@ -179,6 +180,15 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Branch Selector -->
+    <div style="position:fixed;top:10px;right:20px;z-index:1000;">
+      <label for="branchSelector" style="font-weight:bold;margin-right:8px;">โรงงาน :</label>
+      <select id="branchSelector" style="padding:4px 8px;border-radius:6px;">
+        <option value="1">CPF มีนบุรี 1</option>
+        <option value="2">CPF มีนบุรี 2</option>
+      </select>
     </div>
 
     <!-- Modal for Add/Edit Doctor -->
@@ -214,6 +224,12 @@
                         <option value="">-- เลือกหมอ --</option>
                     </select>
                 </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">หมอ 4</label>
+                    <select id="doctor4" class="w-full border border-gray-300 rounded px-3 py-2">
+                        <option value="">-- เลือกหมอ --</option>
+                    </select>
+                </div>
 
                 <div class="flex gap-3 justify-end">
                     <button type="button" id="cancelModalBtn"
@@ -227,21 +243,56 @@
     <script src="Config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
-            if (!isLoggedIn) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const adminName = localStorage.getItem('adminName') || 'Admin';
-            document.getElementById('adminName').textContent = adminName;
-            loadDoctorNames(); // โหลดรายชื่อหมอจากชีต "ตั้งค่าทั่วไป"
-            loadDoctorData();
+      // Branch selector logic with admin permissions
+      const branchSelector = document.getElementById('branchSelector');
+      const savedBranch = localStorage.getItem('branch') || '1';
+      
+      // ตรวจสอบสิทธิ์สาขาของแอดมิน
+      const adminBranchesStr = localStorage.getItem('adminBranches');
+      const adminBranches = adminBranchesStr ? JSON.parse(adminBranchesStr) : ['1'];
+      
+      // ถ้าแอดมินดูแลเฉพาะบางสาขา ให้กรองตัวเลือก
+      if (adminBranches[0] !== 'all') {
+        // ลบตัวเลือกที่ไม่อยู่ในสิทธิ์
+        const options = branchSelector.querySelectorAll('option');
+        options.forEach(opt => {
+          if (!adminBranches.includes(opt.value)) {
+            opt.remove();
+          }
         });
+        
+        // ถ้าสาขาปัจจุบันไม่อยู่ในสิทธิ์ ให้เปลี่ยนเป็นสาขาแรกที่มีสิทธิ์
+        if (!adminBranches.includes(savedBranch)) {
+          localStorage.setItem('branch', adminBranches[0]);
+          branchSelector.value = adminBranches[0];
+        } else {
+          branchSelector.value = savedBranch;
+        }
+      } else {
+        branchSelector.value = savedBranch;
+      }
+      
+      branchSelector.addEventListener('change', function() {
+        localStorage.setItem('branch', this.value);
+        location.reload();
+      });
+      // ตรวจสอบสถานะล็อกอิน
+      const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const adminName = localStorage.getItem('adminName') || 'Admin';
+      document.getElementById('adminName').textContent = adminName;
+      loadDoctorNames(); // โหลดรายชื่อหมอจากชีต "ตั้งค่าทั่วไป"
+      loadDoctorData();
+    });
 
         function logout() {
             localStorage.removeItem('isAdminLoggedIn');
             localStorage.removeItem('adminName');
+            localStorage.removeItem('adminBranches');
+            localStorage.removeItem('branch');
             window.location.href = 'login.html';
         }
 
@@ -274,7 +325,8 @@
         // ฟังก์ชันโหลดรายชื่อหมอจากชีต "ตั้งค่าทั่วไป"
         async function loadDoctorNames() {
             try {
-                const response = await fetch(`${WEB_APP_URL}?action=fetchDoctorNames`);
+                const branch = localStorage.getItem('branch') || '1';
+                const response = await fetch(`${WEB_APP_URL}?action=fetchDoctorNames&branch=${branch}`);
                 const data = await response.json();
                 doctorNamesList = data;
                 
@@ -290,7 +342,7 @@
 
         // ฟังก์ชันเติมข้อมูลใน dropdown
         function populateDoctorDropdowns() {
-            const dropdowns = ['doctor1', 'doctor2', 'doctor3'];
+            const dropdowns = ['doctor1', 'doctor2', 'doctor3', 'doctor4'];
             
             dropdowns.forEach(dropdownId => {
                 const dropdown = document.getElementById(dropdownId);
@@ -339,6 +391,9 @@
             formData.append('doctor1', document.getElementById('doctor1').value);
             formData.append('doctor2', document.getElementById('doctor2').value);
             formData.append('doctor3', document.getElementById('doctor3').value);
+            formData.append('doctor4', document.getElementById('doctor4').value);
+            const branch = localStorage.getItem('branch') || '1';
+            formData.append('branch', branch);
 
 
             try {
@@ -362,7 +417,8 @@
         async function loadDoctorData() {
             showLoading();
             try {
-                const response = await fetch(`${WEB_APP_URL}?action=fetchDoctorData`);
+                const branch = localStorage.getItem('branch') || '1';
+                const response = await fetch(`${WEB_APP_URL}?action=fetchDoctorData&branch=${branch}`);
                 const data = await response.json();
 
                 doctorTableBody.innerHTML = '';
@@ -390,6 +446,7 @@
                             <td class="p-3">${item.doctor1 || '-'}</td>
                             <td class="p-3">${item.doctor2 || '-'}</td>
                             <td class="p-3">${item.doctor3 || '-'}</td>
+                            <td class="p-3">${item.doctor4 || '-'}</td>
                             <td class="p-3 text-center">
                                 <button onclick="editDoctor('${item.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs mr-2">แก้ไข</button>
                                 <button onclick="deleteDoctor('${item.id}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">ลบ</button>
@@ -438,6 +495,7 @@
                 document.getElementById('doctor1').value = data.doctor1 || '';
                 document.getElementById('doctor2').value = data.doctor2 || '';
                 document.getElementById('doctor3').value = data.doctor3 || '';
+                document.getElementById('doctor4').value = data.doctor4 || '';
 
                 doctorModal.classList.remove('hidden');
                 doctorModal.classList.add('flex');
