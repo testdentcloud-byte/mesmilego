@@ -288,24 +288,37 @@
     <script src="Config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-    // Branch dropdown logic
-    const branchDropdown = document.getElementById('branchDropdown');
-    const savedBranch = localStorage.getItem('branch') || '1';
-    branchDropdown.value = savedBranch;
-    branchDropdown.addEventListener('change', function() {
-        localStorage.setItem('branch', branchDropdown.value);
-        location.reload();
-    });
+            // Branch dropdown logic
+            const branchDropdown = document.getElementById('branchDropdown');
+            // sync dropdown with localStorage
+            const savedBranch = localStorage.getItem('branch') || '1';
+            branchDropdown.value = savedBranch;
+            branchDropdown.addEventListener('change', function() {
+                localStorage.setItem('branch', branchDropdown.value);
+                // ไม่ต้อง reload หน้า ให้ทุกฟังก์ชันใช้ branchDropdown.value
+                updateAllBranchDependentData();
+            });
 
-    // ตรวจสอบสถานะล็อกอิน
-    const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
-    if (!isLoggedIn) {
-        window.location.href = 'login.html';
-        return;
-    }
-    const adminName = localStorage.getItem('adminName') || 'Admin';
-    document.getElementById('adminName').textContent = adminName;
-});
+            // ตรวจสอบสถานะล็อกอิน
+            const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+            if (!isLoggedIn) {
+                window.location.href = 'login.html';
+                return;
+            }
+            const adminName = localStorage.getItem('adminName') || 'Admin';
+            document.getElementById('adminName').textContent = adminName;
+
+            // โหลดข้อมูลครั้งแรก
+            updateAllBranchDependentData();
+        });
+
+        // ฟังก์ชันสำหรับโหลดข้อมูลทุกส่วนที่ขึ้นกับ branch
+        function updateAllBranchDependentData() {
+            loadTimeSlots();
+            loadHolidays();
+            loadPermanentHolidays();
+            loadDoctors();
+        }
 
 function logout() {
         localStorage.removeItem('isAdminLoggedIn');
@@ -397,7 +410,7 @@ function logout() {
 
         function loadTimeSlots() {
             timeSlotTableContainer.innerHTML = loadingHTML; // Show loading message
-            const branch = localStorage.getItem('branch') || '1';
+            const branch = document.getElementById('branchDropdown').value;
             fetch(`${CONFIG_URL}?action=fetchTimeSlots&branch=${branch}`)
                 .then(r => r.json())
                 .then(data => {
@@ -432,7 +445,7 @@ function logout() {
         }
 
         function editTimeSlot(id) {
-            const branch = localStorage.getItem('branch') || '1';
+            const branch = document.getElementById('branchDropdown').value;
             fetch(`${CONFIG_URL}?action=fetchTimeSlots&branch=${branch}`).then(r => r.json()).then(data => {
                 const t = data.find(x => x['ไอดี'] === id);
                 if (!t) return Swal.fire({
@@ -464,7 +477,7 @@ function logout() {
                 }
             }).then(res => {
                 if (res.isConfirmed) {
-                    const branch = localStorage.getItem('branch') || '1';
+                    const branch = document.getElementById('branchDropdown').value;
                     fetch(CONFIG_URL, {
                         method: 'POST',
                         body: JSON.stringify({
@@ -509,11 +522,13 @@ function logout() {
         function addHoliday() {
             const date = document.getElementById('holidayInput').value;
             if (!date) return Swal.fire('กรุณาเลือกวันที่', '', 'warning');
+            const branch = document.getElementById('branchDropdown').value;
             fetch(CONFIG_URL, {
                 method: 'POST',
                 body: JSON.stringify({
                     action: 'addHoliday',
-                    date
+                    date,
+                    branch
                 })
             }).then(() => {
                 loadHolidays();
@@ -524,7 +539,7 @@ function logout() {
 
         function loadHolidays() {
             holidayTableContainer.innerHTML = loadingHTML;
-            const branch = localStorage.getItem('branch') || '1';
+            const branch = document.getElementById('branchDropdown').value;
             fetch(`${CONFIG_URL}?action=fetchHolidays&branch=${branch}`).then(r => r.json()).then(data => {
                 let html = `
           <table class="min-w-full divide-y divide-slate-200 text-sm">
@@ -552,7 +567,7 @@ function logout() {
                 showCancelButton: true
             }).then(res => {
                 if (res.isConfirmed) {
-                    const branch = localStorage.getItem('branch') || '1';
+                    const branch = document.getElementById('branchDropdown').value;
                     fetch(CONFIG_URL, {
                         method: 'POST',
                         body: JSON.stringify({
@@ -571,7 +586,7 @@ function logout() {
 // ฟังก์ชันสำหรับโหลดค่าวันหยุดที่ตั้งไว้มาแสดงใน Checkbox
 async function loadPermanentHolidays() {
     try {
-        const branch = localStorage.getItem('branch') || '1';
+    const branch = document.getElementById('branchDropdown').value;
         const response = await fetch(`${CONFIG_URL}?action=fetchGeneralSettings&branch=${branch}`);
         if (!response.ok) throw new Error('Network response was not ok.');
         const data = await response.json();
@@ -600,7 +615,7 @@ async function savePermanentHolidays() {
         customClass: { popup: 'font-thai' }
     });
     try {
-        const branch = localStorage.getItem('branch') || '1';
+    const branch = document.getElementById('branchDropdown').value;
         const response = await fetch(CONFIG_URL, {
             method: 'POST',
             body: JSON.stringify({
