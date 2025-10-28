@@ -1,20 +1,35 @@
 // ================================
 // ค่าคงที่สำหรับ Google Sheet, Calendar และ LINE (Flex message)
-const SPREADSHEET_ID = '1DzQaGJRZNcv0I_ieFmdd9_-ltngtm9Fo2f7SwqQ3igQ';
-const CALENDAR_ID = '851f56a6d18a7aa852c930872af57c3f7fa24734f7c948cf38ecae7cc09d3df6@group.calendar.google.com';
-const LINE_TOKEN = '48lb16bl7sn8aGEiNkaIgFWmkgU4EsHauKAikCZXPaqg/t6bJto1pll2DdRJouTOPbJPRGZA5snAlwQtEGMUiNva1f1agAasgEf+QWK7xRakz+F64nqdwEsHdOZlZwDlP4mFFXLwXop18tv0dEZUhAdB04t89/1O/w1cDnyilFU=';
+const SPREADSHEET_ID = '1djH94Ht78Ig2sUoxdXaVzL37fcggxHSKeafHaWggcsY';
+const CALENDAR_ID = '312221312e2b6d65b5a00e33db2b825a64477c1d9e8ee4dfbe63b6b4ce50fab2@group.calendar.google.com'; // Default calendar (main branch)
+const CALENDAR_ID2 = '5a224d62bb0df1ea998da9969a7da80447b21d90ae73a23184288653b120fb8c@group.calendar.google.com';  
 
-const LIFF_ID_CONFIRM = '2007432636-Rw2NO5DL';  
+// เพิ่ม Map สำหรับแต่ละสาขา
+const CALENDAR_IDS = {
+  'main': CALENDAR_ID,
+  '1': CALENDAR_ID,
+  '2': CALENDAR_ID2,
+  // เพิ่มสาขาอื่นๆ ตามต้องการ
+};
+// Helper: เลือก Calendar ID ตามสาขา
+function getCalendarIdByBranch(branch) {
+  if (!branch || branch === 'main' || branch === '1') return CALENDAR_ID;
+  return CALENDAR_IDS[branch] || CALENDAR_ID;
+}
+const LINE_TOKEN = 'j5YMPEd0AZdVnBum4ZlIEjWv24jYJMiYqdQQwxP7ggoWPFvFL6nrsTtYHOOnX4XeL+1X2HnPHqPCHtgmzHKvUHhAnJdHJbhz7ECK0ZQLid+cS8obWNbZYe/pT7O3UHyWmJIp3sL0m8d9l87StmtvKgdB04t89/1O/w1cDnyilFU=';
+
+const LIFF_ID_CONFIRM = '2008293202-VJQZWvzL';
 
 // ================================
 // ค่าคงที่สำหรับ Telegram Bot
-const TELEGRAM_BOT_TOKEN = 'XXXXXXX';  // Bot Token ของคุณ
+const TELEGRAM_BOT_TOKEN = 'XXXXXXX'; // Bot Token ของคุณ
 const TELEGRAM_CHAT_ID = 'YYYYYYY';  // Chat ID
 
 const SHEET_DATETIME = 'ตั้งค่าทั่วไป';   // ชีตเวลานัดหมาย
-const SHEET_BOOKING = 'บันทึกนัดหมาย';  // ชีตการจอง
+const SHEET_BOOKING = 'บันทึกนัดหมาย'; // ชีตการจอง
 const SHEET_MEMBER = 'รายชื่อสมาชิก';   // ชีตสมาชิก
 const SHEET_SERVICES = 'บริการ';         // ชีตข้อมูลบริการ
+const SHEET_DOCTOR = 'หมอ'; // ชีตข้อมูลหมอ
 
 // ----------------------------------------------------------------
 // ส่งแจ้งเตือนผ่าน Telegram
@@ -31,18 +46,37 @@ function sendTelegramNotify(message) {
 }
 
 // ----------------------------------------------------------------
-// ดึงรายการบริการ
-function fetchServices() {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_SERVICES);
-  const data = sheet.getDataRange().getValues().slice(1);
-  const services = data.map(row => ({
-    id: row[0],
-    name: row[1],
-    details: row[2],
-    price: row[3]
-  }));
-  return ContentService.createTextOutput(JSON.stringify(services))
-    .setMimeType(ContentService.MimeType.JSON);
+// Utility: เลือกชื่อชีตตามสาขา
+function getSheetNameByBranch(baseName, branch) {
+  // กรณีสาขาหลัก (1) ใช้ชื่อเดิม
+  if (!branch || branch === 'main' || branch === '1') {
+    return baseName;
+  }
+  
+  // กรณีสาขาอื่นๆ (2, 3, ...) ให้เพิ่มหมายเลขสาขาต่อท้าย
+  // รูปแบบ: ชื่อชีตเดิม_สาขา2, ชื่อชีตเดิม_สาขา3
+  return `${baseName}_สาขา${branch}`;
+}
+
+// ----------------------------------------------------------------
+// ดึงรายการบริการ (รองรับหลายสาขา)
+function fetchServices(e) {
+  var branch = e && e.parameter && e.parameter.branch ? e.parameter.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_SERVICES, branch);
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+  }
+  var data = sheet.getDataRange().getValues().slice(1);
+  var services = data.map(function(row) {
+    return {
+      id: row[0],
+      name: row[1],
+      details: row[2],
+      price: row[3]
+    };
+  });
+  return ContentService.createTextOutput(JSON.stringify(services)).setMimeType(ContentService.MimeType.JSON);
 }
 
 // ----------------------------------------------------------------
@@ -79,11 +113,25 @@ function doGet(e) {
   const action = e.parameter.action;
   switch (action) {
     case 'fetchServices':
-      return fetchServices();
+      return fetchServices(e);
     case 'fetchServicesAndprice':
       return fetchServicesAndprice();
     case 'fetchBookings':
-      return fetchBookings();
+      return fetchBookings(e);
+    case 'fetchDoctorData':
+      return fetchDoctorData(e);
+    case 'getDoctorById':
+      return getDoctorById(e.parameter.id);
+    case 'getDoctorsByDate':
+      return getDoctorsByDate(e.parameter.date, e.parameter.branch);
+    case 'fetchDoctorNames':
+      return fetchDoctorNames(e);
+    // ===== CODE ที่แก้ไขอยู่ตรงนี้ =====
+    case 'confirmBooking':
+      return confirmBooking(e.parameter);
+    case 'cancelBooking':
+      return cancelBooking(e.parameter);
+    // ================================
     default:
       return checkAvailability(e);
   }
@@ -94,21 +142,30 @@ function doGet(e) {
 // Routing: doPost
 function doPost(e) {
   const action = e.parameter.action;
+  let result = null;
   if (action === 'makeBooking') {
-    return makeBooking(e);
+    result = makeBooking(e);
   } else if (action === 'cancelBooking') {
-    return cancelBooking(e.parameter);
+    result = cancelBooking(e.parameter);
   } else if (action === 'confirmBooking') {
-    return confirmBooking(e.parameter);
+    result = confirmBooking(e.parameter);
   } else if (action === 'completeBooking') {
-    return completeBooking(e);
+    result = completeBooking(e);
   } else if (action === 'sendReminder') {
-    return sendReminder(e.parameter.id);
+    result = sendReminder(e.parameter.id);
   } else if (action === 'sendReminderWithPayment') {
-    return sendReminderWithPayment(e.parameter);
+    result = sendReminderWithPayment(e.parameter);
   } else if (action === 'sendReminderWithoutPayment') {
-    return sendReminderWithoutPayment(e.parameter);
+    result = sendReminderWithoutPayment(e.parameter);
+  } else if (action === 'saveDoctorData') {
+    result = saveDoctorData(e.parameter);
+  } else if (action === 'deleteDoctorData') {
+    result = deleteDoctorData(e.parameter);
+  } else if (action === 'updateAppointmentDoctor') {
+    result = updateAppointmentDoctor(e.parameter);
   }
+  // ไม่ต้องเช็คหรือเพิ่ม CORS header
+  if (result) return result;
   // รองรับ LINE postback JSON
   if (e.postData && e.postData.type === 'application/json') {
     const data = JSON.parse(e.postData.contents);
@@ -135,14 +192,15 @@ function parseQueryString(qs) {
 }
 
 // ----------------------------------------------------------------
-// ตรวจสอบความพร้อมจอง & วันหยุด (เวอร์ชันปรับปรุง + เพิ่มความเสถียร)
+// ตรวจสอบความพร้อมจอง & วันหยุด (รองรับหลายสาขา)
 function checkAvailability(e) {
   if (!e.parameter.date && !e.parameter.getHolidays) {
     return ContentService.createTextOutput(JSON.stringify({ error: "Missing params" }))
       .setMimeType(ContentService.MimeType.JSON);
   }
-
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_DATETIME);
+  var branch = e && e.parameter && e.parameter.branch ? e.parameter.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_DATETIME, branch);
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
   const rows = sheet.getDataRange().getValues();
 
   // --- ส่วนที่ปรับปรุง: เพิ่มการตรวจสอบว่ามีข้อมูลในแถวที่ 2 หรือไม่ ---
@@ -212,7 +270,7 @@ function checkAvailability(e) {
   if (inputDate < today) {
     times.forEach(t => availability[t] = { status: 'เต็ม', remaining: 0, total: 0 });
   } else {
-    const calendar = CalendarApp.getCalendarById(CALENDAR_ID);
+  const calendar = CalendarApp.getCalendarById(getCalendarIdByBranch(branch));
     times.forEach((t, i) => {
       let status = 'Available', remaining = maxBookings[i], total = maxBookings[i];
       if (isHoliday) {
@@ -221,7 +279,7 @@ function checkAvailability(e) {
       } else {
         const [hh, mm] = t.split(':').map(Number);
         const start = new Date(inputDate); start.setHours(hh, mm);
-        const end = new Date(start.getTime() + 30 * 60 * 1000);
+        const end = new Date(start.getTime() + 15 * 60 * 1000); // เปลี่ยนจาก 30 เป็น 15 นาที
         const events = calendar.getEvents(start, end).filter(ev => ev.getTitle().indexOf('นัดคิว:') > -1);
         remaining = total - events.length;
         if (remaining <= 0) { remaining = 0; status = 'เต็ม'; }
@@ -238,25 +296,71 @@ function checkAvailability(e) {
 }
 
 // ----------------------------------------------------------------
-// สร้างการจอง
+// สร้างการจอง (รองรับหลายสาขา)
 function makeBooking(e) {
-  const cal = CalendarApp.getCalendarById(CALENDAR_ID);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_BOOKING);
-  const dtSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_DATETIME);
-  const memSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_MEMBER);
+  var branch = e && e.parameter && e.parameter.branch ? e.parameter.branch : '';
+  var sheetNameBooking = getSheetNameByBranch(SHEET_BOOKING, branch);
+  var sheetNameDatetime = getSheetNameByBranch(SHEET_DATETIME, branch);
+  var sheetNameMember = getSheetNameByBranch(SHEET_MEMBER, branch);
+  const cal = CalendarApp.getCalendarById(getCalendarIdByBranch(branch));
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(sheetNameBooking);
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetNameBooking);
+    // สร้าง Header สำหรับชีตการจอง
+    sheet.getRange(1, 1, 1, 18).setValues([
+      ['ID', 'userlineid', 'firstName', 'lastName', 'phonenumber', 'idCardOrSocial', 'diseaseAllergy', 'note', 'serviceNames', 'totalPrice', 'formattedDate', 'time', 'status', 'timestamp', 'calendarEventId', 'doctor', 'room', 'branch']
+    ]);
+  }
+  let dtSheet = ss.getSheetByName(sheetNameDatetime);
+  if (!dtSheet) {
+    dtSheet = ss.insertSheet(sheetNameDatetime);
+    // สร้าง Header สำหรับชีตเวลานัดหมาย
+    dtSheet.getRange(1, 1, 1, 6).setValues([
+      ['เวลา', 'maxBookings', 'maxBookings', 'holiday', 'permanentHoliday', 'doctorName']
+    ]);
+  }
+  let memSheet = ss.getSheetByName(sheetNameMember);
+  if (!memSheet) {
+    memSheet = ss.insertSheet(sheetNameMember);
+    // สร้าง Header สำหรับชีตสมาชิก
+    memSheet.getRange(1, 1, 1, 8).setValues([
+      ['ID', 'userlineid', 'firstName', 'lastName', 'phonenumber', 'idCardOrSocial', 'diseaseAllergy', 'timestamp']
+    ]);
+  }
 
-  const userlineid = e.parameter.userlineid;
-  const name = e.parameter.name;
-  let phonenumber = e.parameter.phonenumber;
-   // เพิ่มการดึงค่าใหม่จาก parameter
-  var nationalId = e.parameter.national_id;
-  var socialSecurityNumber = e.parameter.social_security_number;
-
-  const note = e.parameter.note;
+  const userlineid = e.parameter.userlineid || '';
+  const firstName = e.parameter.first_name || '';
+  const lastName = e.parameter.last_name || '';
+  const name = (firstName + ' ' + lastName).trim();
+  let phonenumber = e.parameter.phonenumber || '';
+  const idCardOrSocial = e.parameter.id_card_or_social || '';
+  const diseaseAllergy = e.parameter.disease_allergy || '';
+  const note = e.parameter.note || '';
   const timestamp = Utilities.formatDate(new Date(), "GMT+7", "dd-MM-yyyy HH:mm:ss");
-  const date = e.parameter.date;
-  const time = e.parameter.time;
-  const datetime = new Date(`${date}T${time}:00`);
+  const date = e.parameter.date || ''; // รูปแบบ: yyyy-MM-dd
+  const time = e.parameter.time || ''; // รูปแบบ: HH:mm
+  
+  // ตรวจสอบข้อมูลที่จำเป็น
+  if (!date || !time || !firstName || !lastName || !phonenumber || !idCardOrSocial) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: 'ข้อมูลไม่ครบถ้วน กรุณากรอกข้อมูลให้ครบ'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  // แปลงวันที่อย่างปลอดภัย
+  const dateParts = date.split('-'); // ["yyyy", "MM", "dd"]
+  const datetime = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+  
+  // เพิ่มเวลาเข้าไป
+  const [hh, mm] = time.split(':').map(Number);
+  datetime.setHours(hh, mm, 0, 0);
+  
+  // Debug: Log วันที่เพื่อตรวจสอบ
+  Logger.log('Input date string: ' + date);
+  Logger.log('Parsed datetime: ' + datetime);
+  Logger.log('Will format to: ' + Utilities.formatDate(datetime, "Asia/Bangkok", 'dd-MM-yyyy'));
 
   // ✅ เพิ่ม ' เพื่อป้องกันการตัด 0 ออก
   phonenumber = "'" + String(phonenumber).trim();
@@ -267,70 +371,103 @@ function makeBooking(e) {
   if (idx >= 0) {
     const maxBookingsData = dtSheet.getDataRange().getValues().slice(1).map(r => Number(r[2]) || 0);
     const maxBk = maxBookingsData[idx];
-    const events = cal.getEvents(datetime, new Date(datetime.getTime() + 30 * 60 * 1000));
+    const events = cal.getEvents(datetime, new Date(datetime.getTime() + 15 * 60 * 1000)); // เปลี่ยนจาก 30 เป็น 15 นาที
     if (events.length >= maxBk) {
       return ContentService.createTextOutput('ช่วงเวลาที่เลือกเต็มแล้ว');
     }
   }
 
-  const formattedDate = Utilities.formatDate(datetime, Session.getScriptTimeZone(), 'dd-MM-yyyy');
+  const formattedDate = Utilities.formatDate(datetime, "Asia/Bangkok", 'dd-MM-yyyy');
 
   // ดึงบริการ
   let serviceNames = "", totalPrice = 0;
   try {
     const arr = JSON.parse(e.parameter.selectedServices || '[]');
     const details = arr.map(id => getServiceById(id)).filter(s => s);
-    serviceNames = details.map(s => `${s.name} (ราคา ${s.price})`).join(", ");
-    totalPrice = details.reduce((sum, s) => sum + Number(s.price), 0);
+    serviceNames = details.map(s => {
+      let price = Number(s.price);
+      if (isNaN(price)) price = 0;
+      // ถ้าราคาเป็น 0 ไม่ต้องแสดง (ราคา 0)
+      return price > 0 ? `${s.name} (ราคา ${price})` : `${s.name}`;
+    }).join(", ");
+    totalPrice = details.reduce((sum, s) => {
+      let price = Number(s.price);
+      if (isNaN(price)) price = 0;
+      return sum + price;
+    }, 0);
   } catch {
     serviceNames = e.parameter.selectedServices;
   }
 
   // สร้าง Event
-  const event = cal.createEvent(`นัดคิว: ${serviceNames}`, datetime, new Date(datetime.getTime() + 30 * 60 * 1000), {
-    description: `ลูกค้า: ${name}\nเบอร์: ${phonenumber}\nหมายเหตุ: ${note}`
+  const event = cal.createEvent(`นัดคิว: ${serviceNames}`, datetime, new Date(datetime.getTime() + 15 * 60 * 1000), { // เปลี่ยนจาก 30 เป็น 15 นาที
+    description: `ลูกค้า: ${name}\nเบอร์: ${phonenumber}\nเลขบัตร/ประกัน: ${idCardOrSocial}\nโรค/แพ้: ${diseaseAllergy}\nหมายเหตุ: ${note}`
   });
   const calendarEventId = event.getId();
 
   const nextRow = sheet.getLastRow() + 1;
-  const id = 'BK' + (nextRow - 1);
+  // Use branch number in ID, fallback to 0 if not a number
+  let branchNum = branch;
+  if (typeof branchNum === 'string') {
+    branchNum = branchNum.replace(/[^0-9]/g, '');
+    if (!branchNum) branchNum = '0';
+  }
+  // Scan all existing IDs for this branch and find max running number
+  let maxRunning = 0;
+  const allIds = sheet.getRange(2, 1, Math.max(0, sheet.getLastRow()-1), 1).getValues().flat();
+  const idPattern = new RegExp('^BK' + branchNum + '-(\\d+)$');
+  allIds.forEach(function(existingId) {
+    const m = idPattern.exec(existingId);
+    if (m && m[1]) {
+      const num = parseInt(m[1], 10);
+      if (num > maxRunning) maxRunning = num;
+    }
+  });
+  const id = 'BK' + branchNum + '-' + (maxRunning + 1);
+  // ปรับคอลัมน์: [id, userlineid, firstName, lastName, phonenumber, idCardOrSocial, diseaseAllergy, note, serviceNames, totalPrice, formattedDate, time, status, timestamp, calendarEventId, "", "", branch]
+  // branch ต้องอยู่คอลัมน์ R (column 18)
   const newRow = [
-    id,               // A
-    userlineid,       // B
-    name,             // C
-    phonenumber,      // D  
-    nationalId,                // <-- ข้อมูลใหม่
-    socialSecurityNumber,      // <-- ข้อมูลใหม่
-    note,             // E
-    serviceNames,     // F
-    totalPrice,       // G
-    formattedDate,    // H
-    time,             // I
-    'รอการยืนยัน',     // J
-    timestamp,        // K
-    calendarEventId   // L
+    id,               // A (1)
+    userlineid,       // B (2)
+    firstName,        // C (3)
+    lastName,         // D (4)
+    phonenumber,      // E (5)
+    idCardOrSocial,   // F (6)
+    diseaseAllergy,   // G (7)
+    note,             // H (8)
+    serviceNames,     // I (9)
+    totalPrice,       // J (10)
+    formattedDate,    // K (11)
+    time,             // L (12)
+    'รอการยืนยัน',     // M (13)
+    timestamp,        // N (14)
+    calendarEventId,  // O (15)
+    '',               // P (16) - doctor
+    '',               // Q (17) - room
+    branch            // R (18)
   ];
   sheet.getRange(nextRow, 1, 1, newRow.length).setValues([newRow]);
 
   // กำหนดฟอร์แมทเป็นข้อความ
-  sheet.getRange(nextRow, 4).setNumberFormat("@"); // Phone
-  sheet.getRange(nextRow, 8).setNumberFormat("@"); // Date
-  sheet.getRange(nextRow, 9).setNumberFormat("@"); // Time
-  sheet.getRange(nextRow, 11).setNumberFormat("@"); // Timestamp
-  sheet.getRange(nextRow, 12).setNumberFormat("@"); // Calendar Event ID
+  sheet.getRange(nextRow, 5).setNumberFormat("@"); // Phone
+  sheet.getRange(nextRow, 11).setNumberFormat("@"); // Date
+  sheet.getRange(nextRow, 12).setNumberFormat("@"); // Time
+  sheet.getRange(nextRow, 14).setNumberFormat("@"); // Timestamp
+  sheet.getRange(nextRow, 15).setNumberFormat("@"); // Calendar Event ID
 
-  // อัปเดตหรือเพิ่มสมาชิก
+  // อัปเดตหรือเพิ่มสมาชิก (ตัวอย่าง: อัปเดตเฉพาะชื่อ-นามสกุลและเบอร์)
   const dataMem = memSheet.getDataRange().getValues();
   const existIdx = dataMem.findIndex(r => r[1] === userlineid) + 1;
   if (existIdx > 1) {
-    memSheet.getRange(existIdx, 3).setValue(name);
-    memSheet.getRange(existIdx, 4).setNumberFormat("@").setValue(phonenumber);
-    memSheet.getRange(existIdx, 5).setValue(nationalId);
-    memSheet.getRange(existIdx, 6).setValue(socialSecurityNumber);
-    memSheet.getRange(existIdx, 7).setValue(timestamp);
+    memSheet.getRange(existIdx, 3).setValue(firstName);
+    memSheet.getRange(existIdx, 4).setValue(lastName);
+    memSheet.getRange(existIdx, 5).setNumberFormat("@").setValue(phonenumber);
+    memSheet.getRange(existIdx, 6).setValue(idCardOrSocial);
+    memSheet.getRange(existIdx, 7).setValue(diseaseAllergy);
+    memSheet.getRange(existIdx, 8).setValue(timestamp);
   } else {
-    memSheet.appendRow([id, userlineid, name, phonenumber, timestamp]);
-    memSheet.getRange(memSheet.getLastRow(), 4).setNumberFormat("@");
+    memSheet.appendRow([id, userlineid, firstName, lastName, phonenumber, idCardOrSocial, diseaseAllergy, timestamp]);
+    memSheet.getRange(memSheet.getLastRow(), 5).setNumberFormat("@");
   }
 
   // แจ้ง Telegram
@@ -338,7 +475,8 @@ function makeBooking(e) {
     `📅 นัดหมายใหม่\n👤: ${name}\n📋: ${serviceNames}\n💰: ${totalPrice}\n📅: ${formattedDate}\n⏰: ${time}`
   );
 
-  return ContentService.createTextOutput('Booking successful!');
+  return ContentService.createTextOutput('Booking successful!')
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 
@@ -351,12 +489,15 @@ function sendReminderWithPayment(params) {
   const idx = data.findIndex(r => r[0] == id);
   if (idx < 0) return ContentService.createTextOutput('Booking not found');
   const b = data[idx];
-  const totalPrice = b[6];
+  const totalPrice = b[9]; // Column J: totalPrice
+  const fullName = (b[2] || '') + ' ' + (b[3] || ''); // firstName + lastName
+  // Remove (ราคา ...) from serviceNames for Flex
+  const serviceNoPrice = (b[8] || '').split(',').map(s => s.replace(/\(ราคา.*?\)/g, '').trim()).join(', ');
   const qrCodeUrl = `https://promptpay.io/0623733306/${totalPrice}.png`;
-  const liffUrl = `https://liff.line.me/2006029649-EbKnbZJ0?id=${id}&userlineid=${b[1]}&name=${encodeURIComponent(b[2])}&contact=${encodeURIComponent(b[3])}&serviceNames=${encodeURIComponent(b[5])}&totalPrice=${totalPrice}`;
+  const liffUrl = `https://liff.line.me/2006029649-EbKnbZJ0?id=${id}&userlineid=${b[1]}&name=${encodeURIComponent(fullName)}&contact=${encodeURIComponent(b[4])}&serviceNames=${encodeURIComponent(serviceNoPrice)}&totalPrice=${totalPrice}`;
   const reminderData = {
-    idKey: b[0], service: b[5], price: totalPrice,
-    date: b[7], time: b[8], name: b[2],
+    idKey: b[0], service: serviceNoPrice,
+    date: b[10], time: b[11], name: fullName, // Column K: date, Column L: time
     qrCodeUrl, liffUrl
   };
   sendLineMessage(b[1], 'reminder_with_payment', reminderData);
@@ -372,9 +513,12 @@ function sendReminderWithoutPayment(params) {
   const idx = data.findIndex(r => r[0] == id);
   if (idx < 0) return ContentService.createTextOutput('Booking not found');
   const b = data[idx];
+  const fullName = (b[2] || '') + ' ' + (b[3] || ''); // firstName + lastName
+  // Remove (ราคา ...) from serviceNames for Flex
+  const serviceNoPrice = (b[8] || '').split(',').map(s => s.replace(/\(ราคา.*?\)/g, '').trim()).join(', ');
   const reminderData = {
-    idKey: b[0], service: b[5], price: b[6],
-    date: b[7], time: b[8], name: b[2]
+    idKey: b[0], service: serviceNoPrice,
+    date: b[10], time: b[11], name: fullName // Column K: date, Column L: time
   };
   sendLineMessage(b[1], 'reminder_no_payment', reminderData);
   return ContentService.createTextOutput('Reminder without payment sent.');
@@ -384,22 +528,46 @@ function sendReminderWithoutPayment(params) {
 // ยืนยันการจอง
 function confirmBooking(params) {
   const idKey = params.id;
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_BOOKING);
-  const data = sheet.getDataRange().getValues();
-  const idx = data.findIndex(r => r[0] == idKey);
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  
+  // ค้นหาในทุกสาขา
+  const branches = ['1', '2']; // เพิ่มสาขาตามต้องการ
+  let sheet = null;
+  let idx = -1;
+  let data = null;
+  
+  for (const branch of branches) {
+    const sheetName = getSheetNameByBranch(SHEET_BOOKING, branch);
+    const testSheet = spreadsheet.getSheetByName(sheetName);
+    if (!testSheet) continue;
+    
+    const testData = testSheet.getDataRange().getValues();
+    const testIdx = testData.findIndex(r => r[0] == idKey);
+    
+    if (testIdx >= 0) {
+      sheet = testSheet;
+      idx = testIdx;
+      data = testData;
+      break;
+    }
+  }
+  
   if (idx < 0) return ContentService.createTextOutput('ไม่พบการนัดหมายนี้.');
   const booking = data[idx];
-  const current = booking[9];
+  const current = booking[12]; // Column M: status
   if (current !== 'รอการยืนยัน') {
     const msg = `ไม่สามารถยืนยันได้ สถานะปัจจุบันคือ "${current}"`;
     sendLineMessage(booking[1], 'notification', { message: msg });
     return ContentService.createTextOutput(msg);
   }
-  sheet.getRange(idx + 1, 10).setValue('ยืนยันแล้ว');
+  sheet.getRange(idx + 1, 13).setValue('ยืนยันแล้ว'); // Column M: status
+  const fullName = (booking[2] || '') + ' ' + (booking[3] || ''); // firstName + lastName
+  // Remove (ราคา ...) from serviceNames for Flex
+  const serviceNoPrice = (booking[8] || '').split(',').map(s => s.replace(/\(ราคา.*?\)/g, '').trim()).join(', ');
   sendLineMessage(booking[1], 'confirmBooking', {
-    service: booking[5], price: booking[6],
-    date: booking[7], time: booking[8],
-    name: booking[2], status: 'ยืนยันแล้ว', idKey
+    service: serviceNoPrice,
+    date: booking[10], time: booking[11], // Column K: date, Column L: time
+    name: fullName, status: 'ยืนยันแล้ว', idKey
   });
   return ContentService.createTextOutput('Booking confirmed successfully.');
 }
@@ -407,17 +575,22 @@ function confirmBooking(params) {
 // ----------------------------------------------------------------
 // เสร็จสิ้นการจอง
 function completeBooking(e) {
+  var branch = e && e.parameter && e.parameter.branch ? e.parameter.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_BOOKING, branch);
   const idKey = e.parameter.id;
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_BOOKING);
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
   const data = sheet.getDataRange().getValues();
   const idx = data.findIndex(r => r[0] == idKey);
   if (idx < 0) return ContentService.createTextOutput('Booking not found.');
-  sheet.getRange(idx + 1, 10).setValue('เสร็จสิ้น');
+  sheet.getRange(idx + 1, 13).setValue('เสร็จสิ้น'); // Column M: status
   const booking = data[idx];
+  const fullName = (booking[2] || '') + ' ' + (booking[3] || ''); // firstName + lastName
+  // Remove (ราคา ...) from serviceNames for Flex
+  const serviceNoPrice = (booking[8] || '').split(',').map(s => s.replace(/\(ราคา.*?\)/g, '').trim()).join(', ');
   sendLineMessage(booking[1], 'completion', {
-    service: booking[5], price: booking[6],
-    date: booking[7], time: booking[8],
-    name: booking[2], status: 'เสร็จสิ้น'
+    service: serviceNoPrice,
+    date: booking[10], time: booking[11], // Column K: date, Column L: time
+    name: fullName, status: 'เสร็จสิ้น'
   });
   return ContentService.createTextOutput('Booking completed successfully.');
 }
@@ -426,23 +599,46 @@ function completeBooking(e) {
 // ยกเลิกการจอง
 function cancelBooking(params) {
   const idKey = params.id;
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_BOOKING);
-  const data = sheet.getDataRange().getValues();
-  const idx = data.findIndex(r => r[0] == idKey);
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  
+  // ค้นหาในทุกสาขา
+  const branches = ['1', '2']; // เพิ่มสาขาตามต้องการ
+  let sheet = null;
+  let idx = -1;
+  let data = null;
+  let foundBranch = '';
+  
+  for (const branch of branches) {
+    const sheetName = getSheetNameByBranch(SHEET_BOOKING, branch);
+    const testSheet = spreadsheet.getSheetByName(sheetName);
+    if (!testSheet) continue;
+    
+    const testData = testSheet.getDataRange().getValues();
+    const testIdx = testData.findIndex(r => r[0] == idKey);
+    
+    if (testIdx >= 0) {
+      sheet = testSheet;
+      idx = testIdx;
+      data = testData;
+      foundBranch = branch;
+      break;
+    }
+  }
+  
   if (idx < 0) return ContentService.createTextOutput('ไม่พบการนัดหมายนี้.');
   const booking = data[idx];
-  const current = booking[9]; // Column J: Status
+  const current = booking[12]; // Column M: status
   if (current !== 'รอการยืนยัน') {
     const msg = `ไม่สามารถยกเลิกได้ สถานะปัจจุบันคือ "${current}"`;
     sendLineMessage(booking[1], 'notification', { message: msg });
     return ContentService.createTextOutput(msg);
   }
-  sheet.getRange(idx + 1, 10).setValue('ยกเลิก'); // Update status in sheet (Column J)
+  sheet.getRange(idx + 1, 13).setValue('ยกเลิก'); // Column M: status
 
-  const cal = CalendarApp.getCalendarById(CALENDAR_ID);
+  const cal = CalendarApp.getCalendarById(getCalendarIdByBranch(foundBranch));
   try {
-    const calendarEventId = booking[11]; // <<< ดึง Calendar Event ID จากคอลัมน์ใหม่ (Index 11 คือคอลัมน์ L)
-    if (calendarEventId) { // ตรวจสอบว่ามี Event ID อยู่จริง
+    const calendarEventId = booking[14]; // Column O: calendarEventId
+    if (calendarEventId) {
       const ev = cal.getEventById(calendarEventId);
       if (ev) {
         ev.deleteEvent();
@@ -454,13 +650,16 @@ function cancelBooking(params) {
       Logger.log(`No Calendar Event ID found for booking ${idKey}.`);
     }
   } catch (e) {
-    Logger.log(`Error deleting calendar event for booking ${idKey}: ${e.toString()}`); // <<< เพิ่ม Logger เพื่อดู error
+    Logger.log(`Error deleting calendar event for booking ${idKey}: ${e.toString()}`);
   }
 
+  const fullName = (booking[2] || '') + ' ' + (booking[3] || ''); // firstName + lastName
+  // Remove (ราคา ...) from serviceNames for Flex
+  const serviceNoPrice = (booking[8] || '').split(',').map(s => s.replace(/\(ราคา.*?\)/g, '').trim()).join(', ');
   sendLineMessage(booking[1], 'cancellation', {
-    service: booking[5], price: booking[6],
-    date: booking[7], time: booking[8],
-    name: booking[2], status: 'ยกเลิก'
+    service: serviceNoPrice,
+    date: booking[10], time: booking[11], // Column K: date, Column L: time
+    name: fullName, status: 'ยกเลิก'
   });
   return ContentService.createTextOutput('Booking cancelled successfully.');
 }
@@ -472,9 +671,12 @@ function sendReminder(id) {
   const idx = data.findIndex(r => r[0] == id);
   if (idx < 0) return ContentService.createTextOutput('Booking not found.');
   const b = data[idx];
+  const fullName = (b[2] || '') + ' ' + (b[3] || ''); // firstName + lastName
+  // Remove (ราคา ...) from serviceNames for Flex
+  const serviceNoPrice = (b[8] || '').split(',').map(s => s.replace(/\(ราคา.*?\)/g, '').trim()).join(', ');
   sendLineMessage(b[1], 'reminder', {
-    idKey: b[0], service: b[5], price: b[6],
-    date: b[7], time: b[8], name: b[2], status: b[9]
+    idKey: b[0], service: serviceNoPrice,
+    date: b[10], time: b[11], name: fullName, status: b[12] // Column K: date, Column L: time, Column M: status
   });
   return ContentService.createTextOutput('Reminder sent successfully.');
 }
@@ -491,8 +693,8 @@ function sendReminders() {
 
   data.forEach(row => {
     try {
-      const dateStr = row[7]; // วันที่รูปแบบ "DD-MM-YYYY"
-      const status = row[9];
+      const dateStr = row[10]; // Column K: formattedDate
+      const status = row[12]; // Column M: status
 
       if (!dateStr || status !== 'รอการยืนยัน') {
         return; // ข้ามแถวนี้ไปถ้าไม่มีวันที่ หรือสถานะไม่ใช่ 'รอการยืนยัน'
@@ -510,13 +712,13 @@ function sendReminders() {
         bookingDate.getMonth() === tomorrow.getMonth() &&
         bookingDate.getFullYear() === tomorrow.getFullYear()) {
 
+        const fullName = (row[2] || '') + ' ' + (row[3] || ''); // firstName + lastName
         sendLineMessage(row[1], 'reminder', {
           idKey: row[0],
-          service: row[5],
-          price: row[6],
-          date: row[7],
-          time: row[8],
-          name: row[2],
+          service: row[8], // Column I: serviceNames
+          date: row[10], // Column K: formattedDate
+          time: row[11], // Column L: time
+          name: fullName,
           status: 'รอการยืนยัน'
         });
       }
@@ -570,19 +772,47 @@ function testReminderFlex() {
 // ส่งข้อความผ่าน LINE
 function sendLineMessage(userId, type, data) {
   const url = 'https://api.line.me/v2/bot/message/push';
-  const msg = createFlexMessage(type, data);
-  const payload = { to: userId, messages: [msg] };
-  const opts = {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { Authorization: 'Bearer ' + LINE_TOKEN },
-    payload: JSON.stringify(payload)
-  };
+
   try {
+    const msg = createFlexMessage(type, data);
+    if (!msg) {
+      Logger.log(`Failed to create Flex Message for type: ${type} and data: ${JSON.stringify(data)}`);
+      return;
+    }
+
+    const payload = { to: userId, messages: [msg] };
+    const payloadString = JSON.stringify(payload);
+
+    const opts = {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { Authorization: 'Bearer ' + LINE_TOKEN },
+      payload: payloadString,
+      muteHttpExceptions: true // *** IMPORTANT: This allows us to get the error response body ***
+    };
+
+    Logger.log('--- Sending LINE Message ---');
+    Logger.log('User ID: ' + userId);
+    Logger.log('Payload: ' + payloadString);
+
     const resp = UrlFetchApp.fetch(url, opts);
-    Logger.log('LINE push response: ' + resp.getResponseCode());
+    const responseCode = resp.getResponseCode();
+    const responseBody = resp.getContentText();
+
+    Logger.log('LINE Response Code: ' + responseCode);
+    Logger.log('LINE Response Body: ' + responseBody);
+
+    if (responseCode !== 200) {
+      // Also send a notification to Telegram for easier debugging
+      sendTelegramNotify(`LINE API Error!\nCode: ${responseCode}\nUser: ${userId}\nResponse: ${responseBody}`);
+    }
+
   } catch (err) {
-    Logger.log('LINE error: ' + err);
+    Logger.log('!!! Uncaught Exception in sendLineMessage !!!');
+    Logger.log('Error: ' + err.toString());
+    Logger.log('Stack: ' + err.stack);
+    // Also send a notification to Telegram for easier debugging
+    sendTelegramNotify(`FATAL: Uncaught error in sendLineMessage for user ${userId}: ${err.toString()}`);
   }
 }
 // --- วางทับฟังก์ชันนี้ทั้งหมดใน AP V2.js ---
@@ -595,19 +825,18 @@ function createFlexMessage(type, data) {
   }
 
   const serviceText = data.service || 'ไม่มีบริการระบุ';
-  const priceText = (data.price !== null && data.price !== undefined) ? data.price.toString() : '0';
   const nameText = data.name || 'ไม่มีชื่อ';
   const dateText = data.date || 'ไม่มีวันที่';
   const timeText = data.time || 'ไม่มีเวลา';
   const idKeyText = data.idKey || '';
 
   const headerText = {
-    confirmBooking: '✅ ยืนยันการนัดหมาย',
-    cancellation: '⚠️ ยกเลิกการนัดหมาย',
-    completion: '✅ นัดหมายเสร็จสิ้น',
-    reminder: '🔔 กรุณาตรวจสอบนัดหมาย',
-    confirmation: '🔔 การนัดหมาย'
-  }[type] || '🔔 การนัดหมาย';
+    confirmBooking: '✅ ยืนยันการนัดหมาย\nAppointment Confirmed',
+    cancellation: '⚠️ ยกเลิกการนัดหมาย\nAppointment Cancelled',
+    completion: '✅ นัดหมายเสร็จสิ้น\nAppointment Completed',
+    reminder: '🔔 แจ้งเตือนการนัดหมาย\nAppointment Reminder',
+    confirmation: '🔔 การนัดหมาย\nAppointment'
+  }[type] || '🔔 การนัดหมาย\nAppointment';
 
   const statusText = {
     confirmBooking: 'ยืนยันแล้ว',
@@ -630,7 +859,8 @@ function createFlexMessage(type, data) {
     text: headerText,
     weight: 'bold',
     color: statusColor,
-    size: 'sm'
+    size: 'sm',
+    wrap: true
   }, {
     type: 'separator',
     margin: 'md'
@@ -644,23 +874,25 @@ function createFlexMessage(type, data) {
       layout: 'horizontal',
       contents: [{
         type: 'text',
-        text: 'ชื่อผู้จอง',
+        text: 'ชื่อผู้จอง\nName',
         size: 'sm',
         color: '#2F1A87',
-        weight: 'bold'
+        weight: 'bold',
+        flex: 0
       }, {
         type: 'text',
         text: nameText,
         size: 'sm',
         color: '#111111',
-        align: 'end'
+        align: 'end',
+        wrap: true
       }]
     }, {
       type: 'box',
       layout: 'horizontal',
       contents: [{
         type: 'text',
-        text: 'บริการ',
+        text: 'บริการ\nService',
         size: 'sm',
         color: '#2F1A87',
         weight: 'bold'
@@ -681,26 +913,11 @@ function createFlexMessage(type, data) {
       layout: 'horizontal',
       contents: [{
         type: 'text',
-        text: 'ราคา',
+        text: 'วันที่\nDate',
         size: 'sm',
         color: '#2F1A87',
-        weight: 'bold'
-      }, {
-        type: 'text',
-        text: priceText,
-        size: 'sm',
-        color: '#111111',
-        align: 'end'
-      }]
-    }, {
-      type: 'box',
-      layout: 'horizontal',
-      contents: [{
-        type: 'text',
-        text: 'วันที่นัดหมาย',
-        size: 'sm',
-        color: '#2F1A87',
-        weight: 'bold'
+        weight: 'bold',
+        flex: 0
       }, {
         type: 'text',
         text: dateText,
@@ -713,10 +930,11 @@ function createFlexMessage(type, data) {
       layout: 'horizontal',
       contents: [{
         type: 'text',
-        text: 'เวลา',
+        text: 'เวลา\nTime',
         size: 'sm',
         color: '#2F1A87',
-        weight: 'bold'
+        weight: 'bold',
+        flex: 0
       }, {
         type: 'text',
         text: timeText,
@@ -729,10 +947,11 @@ function createFlexMessage(type, data) {
       layout: 'horizontal',
       contents: [{
         type: 'text',
-        text: 'สถานะ',
+        text: 'สถานะ\nStatus',
         size: 'sm',
         color: '#2F1A87',
-        weight: 'bold'
+        weight: 'bold',
+        flex: 0
       }, {
         type: 'text',
         text: statusText,
@@ -747,7 +966,7 @@ function createFlexMessage(type, data) {
   let footerBg = '#FFFFFF';
 
   if (type === 'reminder') {
-    const params = `id=${encodeURIComponent(idKeyText)}&name=${encodeURIComponent(nameText)}&service=${encodeURIComponent(serviceText)}&price=${encodeURIComponent(priceText)}&date=${encodeURIComponent(dateText)}&time=${encodeURIComponent(timeText)}`;
+    const params = `id=${encodeURIComponent(idKeyText)}&name=${encodeURIComponent(nameText)}&service=${encodeURIComponent(serviceText)}&date=${encodeURIComponent(dateText)}&time=${encodeURIComponent(timeText)}`;
     const liffUrl = `https://liff.line.me/${LIFF_ID_CONFIRM}?${params}`;
 
     footer.push({
@@ -758,7 +977,7 @@ function createFlexMessage(type, data) {
         type: 'button',
         action: {
           type: 'uri',
-          label: 'จัดการนัดหมาย',
+          label: 'จัดการนัดหมาย | Manage',
           uri: liffUrl
         },
         style: 'primary',
@@ -774,10 +993,11 @@ function createFlexMessage(type, data) {
       layout: 'vertical',
       contents: [{
         type: 'text',
-        text: 'การนัดหมายถูกยกเลิกแล้ว',
+        text: 'การนัดหมายถูกยกเลิกแล้ว\nAppointment Cancelled',
         size: 'xs',
         color: '#ffffff',
-        align: 'center'
+        align: 'center',
+        wrap: true
       }]
     });
     footerBg = '#EC726E';
@@ -788,10 +1008,11 @@ function createFlexMessage(type, data) {
       layout: 'vertical',
       contents: [{
         type: 'text',
-        text: 'ขอบคุณที่ใช้บริการ',
+        text: 'ขอบคุณที่ใช้บริการ\nThank you for your service',
         size: 'xs',
         color: '#ffffff',
-        align: 'center'
+        align: 'center',
+        wrap: true
       }]
     });
     footerBg = '#03B555';
@@ -802,10 +1023,11 @@ function createFlexMessage(type, data) {
       layout: 'vertical',
       contents: [{
         type: 'text',
-        text: 'บันทึกนัดหมายแล้ว',
+        text: 'บันทึกนัดหมายแล้ว\nAppointment Saved',
         size: 'xs',
         color: '#ffffff',
-        align: 'center'
+        align: 'center',
+        wrap: true
       }]
     });
     footerBg = '#1f1f97';
@@ -816,10 +1038,11 @@ function createFlexMessage(type, data) {
       layout: 'vertical',
       contents: [{
         type: 'text',
-        text: 'กรุณามาก่อน 10-20 นาที',
+        text: 'กรุณามาก่อน 10-20 นาที\nPlease arrive 10-20 minutes early',
         size: 'xs',
         color: '#ffffff',
-        align: 'center'
+        align: 'center',
+        wrap: true
       }]
     });
     footerBg = '#06c755';
@@ -841,7 +1064,7 @@ function createFlexMessage(type, data) {
         type: 'button',
         action: {
           type: 'uri',
-          label: 'ชำระเงิน',
+          label: 'ชำระเงิน | Payment',
           uri: data.liffUrl
         },
         style: 'primary',
@@ -853,7 +1076,7 @@ function createFlexMessage(type, data) {
 
   return {
     type: 'flex',
-    altText: 'กำหนดการนัดหมาย',
+    altText: 'กำหนดการนัดหมาย | Appointment Details',
     contents: {
       type: 'bubble',
       body: {
@@ -872,17 +1095,36 @@ function createFlexMessage(type, data) {
 }
 // ----------------------------------------------------------------
 // ดึงรายการจอง
-function fetchBookings() {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_BOOKING);
+function fetchBookings(e) {
+  var branch = e && e.parameter && e.parameter.branch ? e.parameter.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_BOOKING, branch);
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+  }
   const data = sheet.getDataRange().getValues();
   const result = [];
   for (let i = 1; i < data.length; i++) {
     const r = data[i];
     result.push({
-      idKey: r[0], userlineid: r[1], name: r[2],
-      phonenumber: r[3], national_id: r[4], social_security_number: r[5], note: r[6], service: r[7],
-      price: r[8], date: r[9], time: r[10],
-      status: r[11], timestamp: r[12]
+      idKey: r[0],
+      userlineid: r[1],
+      firstName: r[2],
+      lastName: r[3],
+      phonenumber: r[4],
+      idCardOrSocial: r[5],
+      diseaseAllergy: r[6],
+      note: r[7],
+      service: r[8],
+      price: r[9],
+      date: r[10],
+      time: r[11],
+      status: r[12],
+      timestamp: r[13],
+      calendarEventId: r[14],
+      doctor: r[15] || '',
+      room: r[16] || '',
+      branch: r[17] || ''
     });
   }
   return ContentService.createTextOutput(JSON.stringify(result))
@@ -903,3 +1145,305 @@ function testCompleteBooking() {
   const resp = completeBooking({ parameter: { id: 1 } });
   Logger.log(resp.getContent());
 }
+
+// ================================================================
+// =================== ฟังก์ชันจัดการข้อมูลหมอ ===================
+// ================================================================
+
+// ----------------------------------------------------------------
+// ดึงข้อมูลหมอทั้งหมด
+function fetchDoctorData(e) {
+  var branch = e && e.parameter && e.parameter.branch ? e.parameter.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_DOCTOR, branch);
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+    if (!sheet) {
+      // ถ้ายังไม่มีชีต ให้สร้างใหม่
+      const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+      const newSheet = ss.insertSheet(sheetName);
+      // สร้าง Header
+      newSheet.getRange(1, 1, 1, 7).setValues([['ID', 'วันที่', 'หมอ 1', 'หมอ 2', 'หมอ 3', 'หมอ 4', 'หมอ 5']]);
+      return ContentService.createTextOutput(JSON.stringify([]))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = sheet.getDataRange().getValues().slice(1); // ข้าม header
+    const result = data.map(row => {
+      let dateValue = row[1];
+      if (dateValue instanceof Date) {
+        dateValue = Utilities.formatDate(dateValue, "Asia/Bangkok", "dd-MM-yyyy");
+      } else if (typeof dateValue === 'string' && dateValue.includes('-') && dateValue.split('-').length === 3) {
+        const parts = dateValue.split('-');
+        if (parts[0].length === 4) {
+          dateValue = `${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[0]}`;
+        }
+      }
+      return {
+        id: row[0],
+        date: dateValue,
+        doctor1: row[2] || '',
+        doctor2: row[3] || '',
+        doctor3: row[4] || '',
+        doctor4: row[5] || '',
+        doctor5: row[6] || ''
+      };
+    }).filter(item => item.id);
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ----------------------------------------------------------------
+// ดึงข้อมูลหมอตาม ID
+function getDoctorById(id) {
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_DOCTOR);
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({ error: 'ไม่พบชีตข้อมูลหมอ' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    const idx = data.findIndex(row => row[0] == id);
+    
+    if (idx < 0) {
+      return ContentService.createTextOutput(JSON.stringify({ error: 'ไม่พบข้อมูล' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const row = data[idx];
+    let dateValue = row[1];
+    
+    // แปลงวันที่ให้เป็น dd-MM-yyyy
+    if (dateValue instanceof Date) {
+      dateValue = Utilities.formatDate(dateValue, "Asia/Bangkok", "dd-MM-yyyy");
+    } else if (typeof dateValue === 'string' && dateValue.includes('-') && dateValue.split('-').length === 3) {
+      const parts = dateValue.split('-');
+      if (parts[0].length === 4) {
+        // ถ้าเป็น yyyy-MM-dd ให้แปลงเป็น dd-MM-yyyy
+        dateValue = `${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[0]}`;
+      }
+    }
+    
+    const result = {
+      id: row[0],
+      date: dateValue,
+      doctor1: row[2] || '',
+      doctor2: row[3] || '',
+      doctor3: row[4] || '',
+      doctor4: row[5] || '',
+      doctor5: row[6] || ''
+    };
+    
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    Logger.log('getDoctorById error: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({ error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ----------------------------------------------------------------
+// ดึงข้อมูลหมอตามวันที่ (สำหรับใช้ใน dropdown ของหน้า appointment)
+function getDoctorsByDate(date, branch) {
+  try {
+    var sheetName = getSheetNameByBranch(SHEET_DOCTOR, branch || '');
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify([]))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const data = sheet.getDataRange().getValues().slice(1);
+    const doctors = [];
+    
+    // แปลงวันที่ให้เป็นรูปแบบเดียวกัน (dd-MM-yyyy)
+    let searchDate = date;
+    if (date.includes('-') && date.split('-').length === 3) {
+      const parts = date.split('-');
+      if (parts[0].length === 4) {
+        // ถ้าเป็น yyyy-MM-dd หรือ yyyy-M-d ให้แปลงเป็น dd-MM-yyyy
+        searchDate = `${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[0]}`;
+      }
+    }
+    
+    Logger.log('Searching for doctors on date: ' + searchDate);
+    
+    data.forEach(row => {
+      let rowDate = row[1];
+      
+      // แปลงวันที่ในชีตให้เป็น dd-MM-yyyy
+      if (rowDate instanceof Date) {
+        rowDate = Utilities.formatDate(rowDate, "Asia/Bangkok", "dd-MM-yyyy");
+      } else if (typeof rowDate === 'string') {
+        if (rowDate.includes('-') && rowDate.split('-').length === 3) {
+          const parts = rowDate.split('-');
+          if (parts[0].length === 4) {
+            // ถ้าเป็น yyyy-MM-dd ให้แปลงเป็น dd-MM-yyyy
+            rowDate = `${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[0]}`;
+          }
+        }
+      }
+      
+      Logger.log(`Comparing: ${rowDate} === ${searchDate}`);
+      
+      if (rowDate === searchDate) {
+        // เก็บชื่อหมอที่ไม่ว่าง
+        for (let i = 2; i <= 6; i++) {
+          if (row[i]) {
+            doctors.push(row[i]);
+          }
+        }
+      }
+    });
+    
+    Logger.log('Found doctors: ' + JSON.stringify(doctors));
+    
+    return ContentService.createTextOutput(JSON.stringify(doctors))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    Logger.log('getDoctorsByDate error: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify([]))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ----------------------------------------------------------------
+// บันทึกข้อมูลหมอ (เพิ่ม/แก้ไข)
+function saveDoctorData(params) {
+  var branch = params && params.branch ? params.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_DOCTOR, branch);
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+    if (!sheet) {
+      return ContentService.createTextOutput('ไม่พบชีตข้อมูลหมอ');
+    }
+    
+    const id = params.id;
+    let date = params.date;
+    const doctor1 = params.doctor1 || '';
+    const doctor2 = params.doctor2 || '';
+    const doctor3 = params.doctor3 || '';
+    const doctor4 = params.doctor4 || '';
+    const doctor5 = params.doctor5 || '';
+    
+    // แปลงวันที่ให้เป็นรูปแบบ dd-MM-yyyy
+    if (date && date.includes('-') && date.split('-').length === 3) {
+      const parts = date.split('-');
+      if (parts[0].length === 4) {
+        // ถ้าเป็น yyyy-MM-dd ให้แปลงเป็น dd-MM-yyyy
+        date = `${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[0]}`;
+      }
+    }
+    
+    if (id) {
+      // แก้ไขข้อมูลเดิม
+      const data = sheet.getDataRange().getValues();
+      const idx = data.findIndex(row => row[0] == id);
+      
+      if (idx < 0) {
+        return ContentService.createTextOutput('ไม่พบข้อมูลที่ต้องการแก้ไข');
+      }
+      
+      sheet.getRange(idx + 1, 2, 1, 6).setValues([[date, doctor1, doctor2, doctor3, doctor4, doctor5]]);
+      sheet.getRange(idx + 1, 2).setNumberFormat("@"); // บังคับให้เป็น Text
+      return ContentService.createTextOutput('แก้ไขข้อมูลสำเร็จ');
+    } else {
+      // เพิ่มข้อมูลใหม่
+      const nextRow = sheet.getLastRow() + 1;
+      const newId = 'DOC' + (nextRow - 1);
+      sheet.getRange(nextRow, 1, 1, 7).setValues([[newId, date, doctor1, doctor2, doctor3, doctor4, doctor5]]);
+      sheet.getRange(nextRow, 2).setNumberFormat("@"); // บังคับให้เป็น Text
+      return ContentService.createTextOutput('เพิ่มข้อมูลสำเร็จ');
+    }
+  } catch (error) {
+    Logger.log('saveDoctorData error: ' + error.toString());
+    return ContentService.createTextOutput('เกิดข้อผิดพลาด: ' + error.toString());
+  }
+}
+
+// ----------------------------------------------------------------
+// ลบข้อมูลหมอ
+function deleteDoctorData(params) {
+  var branch = params && params.branch ? params.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_DOCTOR, branch);
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+    if (!sheet) {
+      return ContentService.createTextOutput('ไม่พบชีตข้อมูลหมอ');
+    }
+    
+    const id = params.id;
+    const data = sheet.getDataRange().getValues();
+    const idx = data.findIndex(row => row[0] == id);
+    
+    if (idx < 0) {
+      return ContentService.createTextOutput('ไม่พบข้อมูลที่ต้องการลบ');
+    }
+    
+    sheet.deleteRow(idx + 1);
+    return ContentService.createTextOutput('ลบข้อมูลสำเร็จ');
+  } catch (error) {
+    Logger.log('deleteDoctorData error: ' + error.toString());
+    return ContentService.createTextOutput('เกิดข้อผิดพลาด: ' + error.toString());
+  }
+}
+
+// ----------------------------------------------------------------
+// อัปเดตข้อมูลหมอและห้องในการนัดหมาย
+function updateAppointmentDoctor(params) {
+  var branch = params && params.branch ? params.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_BOOKING, branch);
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+    const id = params.id;
+    const doctor = params.doctor || '';
+    const room = params.room || '';
+    const data = sheet.getDataRange().getValues();
+    const idx = data.findIndex(row => row[0] == id);
+    if (idx < 0) {
+      return ContentService.createTextOutput('ไม่พบการนัดหมายนี้');
+    }
+    // Column P (16) = หมอ, Column Q (17) = ห้อง
+    sheet.getRange(idx + 1, 16).setValue(doctor);
+    sheet.getRange(idx + 1, 17).setValue(room);
+    return ContentService.createTextOutput('อัปเดตข้อมูลสำเร็จ');
+  } catch (error) {
+    Logger.log('updateAppointmentDoctor error: ' + error.toString());
+    return ContentService.createTextOutput('เกิดข้อผิดพลาด: ' + error.toString());
+  }
+}
+
+// ----------------------------------------------------------------
+// ดึงรายชื่อหมอจากชีต "ตั้งค่าทั่วไป" คอลัมน์ F
+function fetchDoctorNames(e) {
+  var branch = e && e.parameter && e.parameter.branch ? e.parameter.branch : '';
+  var sheetName = getSheetNameByBranch(SHEET_DATETIME, branch);
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify([]))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = sheet.getDataRange().getValues();
+    const doctorNames = [];
+    for (let i = 1; i < data.length; i++) {
+      const doctorName = data[i][5];
+      if (doctorName && doctorName.toString().trim() !== '') {
+        doctorNames.push(doctorName.toString().trim());
+      }
+    }
+    const uniqueDoctors = [...new Set(doctorNames)];
+    Logger.log('Found doctors: ' + JSON.stringify(uniqueDoctors));
+    return ContentService.createTextOutput(JSON.stringify(uniqueDoctors))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    Logger.log('fetchDoctorNames error: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify([]))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+
