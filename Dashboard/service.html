@@ -15,11 +15,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        
-        .font-thai {
-            font-family: 'Noto Sans Thai', sans-serif;
-        }
-        
+
         .table-scroll-container::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -39,6 +35,20 @@
         
         .hidden {
             display: none !important;
+        }
+        /* Loading Spinner */
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: .5rem solid #e5e7eb; /* slate-200 */
+            border-top: .5rem solid #4ade80; /* green-600 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -202,8 +212,10 @@
 
             <!-- Table Section -->
             <section class="bg-white shadow rounded-lg overflow-hidden">
-                <div id="serviceTableContainer" class="overflow-x-auto table-scroll-container">
+                <div id="loadingSpinner" class="flex justify-center items-center py-8 hidden">
+                    <div class="spinner"></div>
                 </div>
+                <div id="serviceTableContainer" class="overflow-x-auto table-scroll-container"></div>
             </section>
         </div>
     </main>
@@ -340,7 +352,11 @@
 
         function loadServices() {
             const branch = localStorage.getItem('branch') || '1';
-            fetch(`${CONFIG_URL}?action=fetchData&branch=${branch}`) // Assuming 'fetchData' is your GAS action for services
+            const spinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('serviceTableContainer');
+            spinner.classList.remove('hidden');
+            tableContainer.classList.add('hidden');
+            fetch(`${CONFIG_URL}?action=fetchData&branch=${branch}`)
                 .then(response => {
                     if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
                     return response.json();
@@ -351,7 +367,7 @@
                 })
                 .catch(error => {
                     console.error('Error loading services:', error);
-                    document.getElementById('serviceTableContainer').innerHTML = `<p class="p-4 text-red-500 font-thai">เกิดข้อผิดพลาดในการโหลดข้อมูลบริการ: ${error.message}</p>`;
+                    tableContainer.innerHTML = `<p class="p-4 text-red-500 font-thai">เกิดข้อผิดพลาดในการโหลดข้อมูลบริการ: ${error.message}</p>`;
                     Swal.fire({
                         icon: 'error',
                         title: 'ผิดพลาด!',
@@ -360,6 +376,10 @@
                             popup: 'font-thai'
                         }
                     });
+                })
+                .finally(() => {
+                    spinner.classList.add('hidden');
+                    tableContainer.classList.remove('hidden');
                 });
         }
 

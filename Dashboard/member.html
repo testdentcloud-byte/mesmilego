@@ -14,10 +14,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        
-        .font-thai {
-            font-family: 'Noto Sans Thai', sans-serif;
-        }
+
         
         .table-scroll-container::-webkit-scrollbar {
             width: 6px;
@@ -33,6 +30,26 @@
         .table-scroll-container::-webkit-scrollbar-track {
             background-color: #f1f5f9;
             /* slate-100 */
+        }
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: .5rem solid #eee;
+            border-top: .5rem solid #4ade80;
+            /* green-400 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+            /* Ensure override */
         }
     </style>
 </head>
@@ -207,8 +224,10 @@
             </div>
 
             <div class="bg-white shadow rounded-lg overflow-hidden">
-                <div id="memberTableContainer" class="overflow-x-auto table-scroll-container">
+                <div id="loadingSpinner" class="flex justify-center items-center py-8 hidden">
+                    <div class="spinner"></div>
                 </div>
+                <div id="memberTableContainer" class="overflow-x-auto table-scroll-container"></div>
             </div>
         </div>
     </main>
@@ -341,6 +360,10 @@
 
         function loadMembers() {
             const branch = localStorage.getItem('branch') || '1';
+            const spinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('memberTableContainer');
+            spinner.classList.remove('hidden');
+            tableContainer.classList.add('hidden');
             fetch(`${CONFIG_URL}?action=fetchMemberData&branch=${branch}`)
                 .then(response => {
                     if (!response.ok) {
@@ -354,8 +377,12 @@
                 })
                 .catch(error => {
                     console.error('Error loading members:', error);
-                    document.getElementById('memberTableContainer').innerHTML = `<p class="p-4 text-red-500 font-thai">เกิดข้อผิดพลาดในการโหลดข้อมูลสมาชิก: ${error.message}</p>`;
+                    tableContainer.innerHTML = `<p class=\"p-4 text-red-500 font-thai\">เกิดข้อผิดพลาดในการโหลดข้อมูลสมาชิก: ${error.message}</p>`;
                     Swal.fire('ผิดพลาด!', `ไม่สามารถโหลดข้อมูลสมาชิกได้: ${error.message}`, 'error');
+                })
+                .finally(() => {
+                    spinner.classList.add('hidden');
+                    tableContainer.classList.remove('hidden');
                 });
         }
 
@@ -364,7 +391,7 @@
             <thead class="bg-slate-50">
                 <tr>
                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">รหัส</th>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ไลน์ไอดี</th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai hidden">ไลน์ไอดี</th>
                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">ชื่อ</th>
                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">นามสกุล</th>
                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider font-thai">เบอร์โทร</th>
@@ -383,7 +410,7 @@
                 dataToRender.forEach(member => {
                     html += `<tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 whitespace-nowrap text-slate-700 font-mono text-xs">${member['รหัส'] || '-'}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-600 font-thai">${member['ไลน์ไอดี'] || '-'}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-600 font-thai hidden">${member['ไลน์ไอดี'] || '-'}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-slate-800 font-medium font-thai">${member['ชื่อ'] || '-'}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-slate-800 font-medium font-thai">${member['นามสกุล'] || '-'}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-slate-600 font-thai">${member['เบอร์โทร'] || '-'}</td>
