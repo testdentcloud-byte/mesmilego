@@ -792,10 +792,13 @@
         <div class="step step-active w-full mt-8 pb-8">
             <img src="https://llll12t.github.io/Me-smile/me%20smile.jpg" alt="Logo"
                 class="w-24 h-24 object-container mx-auto m-10 rounded-md" />
-            <label class="block mb-3 text-lg text-center text-base font-semibold">เลือกสาขา</label>
+            <label class="block mb-3 text-lg text-center text-base font-semibold">เลือกโรงงาน</label>
             <div class="flex flex-col gap-4 w-full max-w-xs mx-auto">
-                <button type="button" class="btn btn-primary branch-btn" data-branch="1">CPF มีนบุรี 1</button>
-                <button type="button" class="btn btn-primary branch-btn" data-branch="2">CPF มีนบุรี 2</button>
+                <select id="branchDropdown" class="border border-element rounded-lg px-4 py-3 text-base font-thai">
+                    <option value="" selected disabled>เลือกโรงงาน</option>
+                    <option value="1">CPF มีนบุรี 1</option>
+                    <option value="2">CPF มีนบุรี 2</option>
+                </select>
             </div>
         </div>
     </div>
@@ -804,7 +807,7 @@
     <script src="Config.js"></script>
 
     <script>
-        const ENABLE_LIFF = true; // เปลี่ยนเป็น true เพื่อเปิดใช้งาน LIFF
+        const ENABLE_LIFF = false; // เปลี่ยนเป็น true เพื่อเปิดใช้งาน LIFF
         const $ = (id) => document.getElementById(id);
 
         const defaultLang = 'th';
@@ -1011,7 +1014,6 @@
                     <div class="col-span-2 flex flex-col items-center justify-center py-8">
                         <div class="flex items-center mb-3">
                             <div class="service-loader"></div>
-                            <span class="loading-text">${t('service.loading') || 'กำลังโหลดบริการ...'}</span>
                         </div>
                     </div>
                 `;
@@ -1816,18 +1818,16 @@
             $('branchSection').style.display = 'block';
             showLoading(false);
 
-            // Branch selection logic (button version)
-            const branchBtns = document.querySelectorAll('.branch-btn');
-            branchBtns.forEach(btn => {
-                btn.onclick = async () => {
-                    const branch = btn.dataset.branch;
-                    if (!branch) return;
-                    localStorage.setItem('selectedBranch', branch);
-                    $('branchSection').style.display = 'none';
-                    $('appContainer').style.display = 'flex';
-                    $('appContainer').style.opacity = '1';
-                    await loadBookingUI(branch);
-                };
+            // Branch selection logic (dropdown version)
+            const branchDropdown = document.getElementById('branchDropdown');
+            branchDropdown.addEventListener('change', async function() {
+                const branch = branchDropdown.value;
+                if (!branch) return;
+                localStorage.setItem('selectedBranch', branch);
+                $('branchSection').style.display = 'none';
+                $('appContainer').style.display = 'flex';
+                $('appContainer').style.opacity = '1';
+                await loadBookingUI(branch);
             });
 
             async function loadBookingUI(branch) {
