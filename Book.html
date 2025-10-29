@@ -792,13 +792,10 @@
         <div class="step step-active w-full mt-8 pb-8">
             <img src="https://llll12t.github.io/Me-smile/me%20smile.jpg" alt="Logo"
                 class="w-24 h-24 object-container mx-auto m-10 rounded-md" />
-            <label class="block mb-3 text-lg text-center text-base font-semibold">เลือกโรงงาน</label>
+            <label class="block mb-3 text-lg text-center text-base font-semibold">เลือกสาขา</label>
             <div class="flex flex-col gap-4 w-full max-w-xs mx-auto">
-                <select id="branchDropdown" class="border border-element rounded-lg px-4 py-3 text-base font-thai">
-                    <option value="" selected disabled>เลือกโรงงาน</option>
-                    <option value="1">CPF มีนบุรี 1</option>
-                    <option value="2">CPF มีนบุรี 2</option>
-                </select>
+                <button type="button" class="btn btn-primary branch-btn" data-branch="1">CPF มีนบุรี 1</button>
+                <button type="button" class="btn btn-primary branch-btn" data-branch="2">CPF มีนบุรี 2</button>
             </div>
         </div>
     </div>
@@ -1026,7 +1023,6 @@
                     langSwitch.style.opacity = '0.6';
                 }
             } else {
-                // re-enable controls; content will be refreshed by fetchServiceData
                 if (nextBtn) {
                     nextBtn.disabled = false;
                     nextBtn.classList.remove('btn-loading');
@@ -1045,11 +1041,23 @@
                 `<svg class="w-12 h-12 text-base mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>` :
                 `<svg class="w-12 h-12 text-error mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
 
-            $('popupContent').innerHTML = `
-          <div class="py-4 text-center">${icon}<p>${msg}</p></div>
-          <div class="mt-4 text-center">
-            <button onclick="hidePopup()" class="btn btn-secondary w-full sm:w-auto px-6">${t('popup.close')}</button>
-          </div>`;
+                        $('popupContent').innerHTML = `
+                    <div class="py-4 text-center">${icon}<p>${msg}</p></div>
+                    <div class="mt-4 text-center">
+                        <button id="popupCloseBtn" class="btn btn-secondary w-full sm:w-auto px-6">${t('popup.close')}</button>
+                    </div>`;
+                        // Add LIFF close logic for booking success
+                        setTimeout(() => {
+                                const btn = document.getElementById('popupCloseBtn');
+                                if (btn) {
+                                        btn.onclick = function() {
+                                                hidePopup();
+                                                if (msgKey === 'popup.bookingSuccess' && window.liff && typeof liff.closeWindow === 'function') {
+                                                        liff.closeWindow();
+                                                }
+                                        };
+                                }
+                        }, 0);
             const popupEl = $('popup');
             popupEl.style.display = 'flex';
             setTimeout(() => popupEl.classList.add('visible'), 10);
@@ -1798,6 +1806,31 @@
                         makeFieldBox(t('flex.noteLabel'), $('note').value || '-')
                     ]
                 },
+                footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                        {
+                            type: 'text',
+                            text: 'ทำการจองให้เรียบร้อยค่ะ',
+                            wrap: true,
+                            size: 'sm',
+                            color: '#00B8B0',
+                            weight: 'bold',
+                            margin: 'md',
+                            align: 'center'
+                        },
+                        {
+                            type: 'text',
+                            text: 'เพื่อความรวดเร็ว \nกรุณากด ยืนยัน นัดหมาย \nก่อนวันนัด1 วันนะคะ \n\nท่านสามารถตรวจสอบประวัติการจอง และ กดยืนยันหรือยกเลิกนัดหมาย ได้ที่ เมนู “นัดหมาย/ยืนยัน” เลือก “ข้อมูลการนัดหมาย” และกด“ยืนยัน”ค่ะ  แล้วพบกันนะคะ',
+                            wrap: true,
+                            size: 'sm',
+                            color: '#555555',
+                            margin: 'md',
+                            align: 'center'
+                        }
+                    ]
+                },
                 styles: { header: { separator: false } }
             };
             try {
@@ -1818,16 +1851,18 @@
             $('branchSection').style.display = 'block';
             showLoading(false);
 
-            // Branch selection logic (dropdown version)
-            const branchDropdown = document.getElementById('branchDropdown');
-            branchDropdown.addEventListener('change', async function() {
-                const branch = branchDropdown.value;
-                if (!branch) return;
-                localStorage.setItem('selectedBranch', branch);
-                $('branchSection').style.display = 'none';
-                $('appContainer').style.display = 'flex';
-                $('appContainer').style.opacity = '1';
-                await loadBookingUI(branch);
+            // Branch selection logic (button version)
+            const branchBtns = document.querySelectorAll('.branch-btn');
+            branchBtns.forEach(btn => {
+                btn.onclick = async () => {
+                    const branch = btn.dataset.branch;
+                    if (!branch) return;
+                    localStorage.setItem('selectedBranch', branch);
+                    $('branchSection').style.display = 'none';
+                    $('appContainer').style.display = 'flex';
+                    $('appContainer').style.opacity = '1';
+                    await loadBookingUI(branch);
+                };
             });
 
             async function loadBookingUI(branch) {
