@@ -150,14 +150,34 @@
                     <option value="2">CPF มีนบุรี 2</option>
                 </select>
                 
-                <!-- Bot Status Toggle in Navbar -->
+                <!-- Bot Status Update Button in Navbar -->
                 <div class="border-l border-slate-200 pl-4 flex items-center gap-3">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="botStatusToggle" class="sr-only peer">
-                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                        <span id="botStatusLabel" class="ml-3 text-sm font-medium text-slate-700 font-thai">OFF</span>
-                    </label>
-                    <div class="text-xs text-slate-500 font-thai" id="botLastedExecute" title="เวลาอัพเดทล่าสุด">-</div>
+                    <button id="updateBotBtn" onclick="updateBotStatus()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center space-x-2 font-thai transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        <span>อัพเดทข้อมูล</span>
+                    </button>
+                    <div class="flex flex-col text-xs font-thai">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-600">สถานะ:</span>
+                            <span id="botStatusLabel" class="font-semibold text-slate-800">-</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500">อัพเดท:</span>
+                            <span id="botLastedExecute" class="text-slate-700">-</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500">Stage:</span>
+                            <span id="botStage" class="text-green-600 font-medium">-</span>
+                            <span id="autoCheckIndicator" class="hidden">
+                                <svg class="animate-spin h-3 w-3 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -879,65 +899,172 @@ async function savePermanentHolidays() {
         }
 
         // === Bot Status Management ===
+        let autoCheckInterval = null; // เก็บ interval ID สำหรับหยุด auto check
+
         function loadBotStatus() {
             fetch(`${CONFIG_URL}?action=fetchBotStatus`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        const toggle = document.getElementById('botStatusToggle');
-                        const label = document.getElementById('botStatusLabel');
+                        const statusLabel = document.getElementById('botStatusLabel');
                         const lastExecute = document.getElementById('botLastedExecute');
-                        const stage = document.getElementById('botStage');
+                        const stageLabel = document.getElementById('botStage');
 
-                        // กำหนดค่า checkbox
-                        const isOn = data.status === true || String(data.status).toUpperCase() === 'TRUE';
-                        toggle.checked = isOn;
-                        label.textContent = isOn ? 'ON' : 'OFF';
-                        label.className = `ml-3 text-sm font-medium ${isOn ? 'text-green-600' : 'text-slate-700'} font-thai`;
+                        // แปลงค่า status และแสดงผล
+                        const status = data.status === 'TRUE' || data.status === true ? 'TRUE' : 'FALSE';
+                        statusLabel.textContent = status;
+                        statusLabel.className = `font-semibold ${status === 'TRUE' ? 'text-green-600' : 'text-red-600'}`;
 
-                        // แสดงข้อมูลอื่น (แปลงรูปแบบวันที่)
-                        let dateText = data.lastedExecute || '-';
-                        // ถ้าเป็นรูปแบบ "dd/mm/yyyy, HH:mm:ss" ให้แสดง "dd/mm/yyyy, HH:mm"
-                        if (dateText && dateText.includes(',')) {
-                            const parts = dateText.split(',');
-                            const timeParts = parts[1].trim().split(':');
-                            dateText = parts[0] + ', ' + timeParts[0] + ':' + timeParts[1];
+                        // แสดงเวลาอัพเดทล่าสุด
+                        if (data.lastedExecute) {
+                            lastExecute.textContent = data.lastedExecute;
+                        } else {
+                            lastExecute.textContent = '-';
                         }
-                        lastExecute.textContent = dateText;
-                        if (stage) stage.textContent = data.stage || '-';
+
+                        // แสดง stage
+                        if (data.stage) {
+                            stageLabel.textContent = data.stage;
+                            stageLabel.className = `font-medium ${data.stage === 'done' ? 'text-green-600' : data.stage === 'pending' ? 'text-blue-600' : 'text-slate-600'}`;
+                        } else {
+                            stageLabel.textContent = '-';
+                        }
                     }
                 })
                 .catch(err => console.error('Error loading bot status:', err));
         }
 
-        document.getElementById('botStatusToggle').addEventListener('change', function() {
-            Swal.fire({
-                title: 'กำลังเปลี่ยน...',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading(),
-                customClass: {
-                    popup: 'font-thai'
-                }
-            });
+        // ฟังก์ชันเริ่ม Auto Check
+        function startAutoCheck() {
+            const indicator = document.getElementById('autoCheckIndicator');
+            indicator.classList.remove('hidden'); // แสดง loading indicator
+
+            // หยุด interval เก่าก่อน (ถ้ามี)
+            if (autoCheckInterval) {
+                clearInterval(autoCheckInterval);
+            }
+
+            let checkCount = 0;
+            const maxChecks = 40; // เช็คสูงสุด 40 ครั้ง (40 x 3 วินาที = 2 นาที)
+
+            autoCheckInterval = setInterval(() => {
+                checkCount++;
+                console.log(`Auto checking status... (${checkCount}/${maxChecks})`);
+
+                fetch(`${CONFIG_URL}?action=fetchBotStatus`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadBotStatus(); // อัพเดท UI
+
+                            // ตรวจสอบว่า stage เป็น done และ status เป็น FALSE หรือไม่
+                            if (data.stage === 'done' && (data.status === 'FALSE' || data.status === false)) {
+                                stopAutoCheck();
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '✅ กระบวนการเสร็จสิ้น',
+                                    html: `
+                                        <div class="text-left font-thai">
+                                            <p class="mb-2">ระบบได้ทำงานและอัพเดทข้อมูลเรียบร้อยแล้ว</p>
+                                            <div class="bg-slate-50 p-3 rounded text-sm">
+                                                <p><strong>สถานะ:</strong> <span class="text-red-600">FALSE</span></p>
+                                                <p><strong>Stage:</strong> <span class="text-green-600">done</span></p>
+                                                <p><strong>เวลา:</strong> ${data.lastedExecute || '-'}</p>
+                                            </div>
+                                        </div>
+                                    `,
+                                    confirmButtonText: 'รับทราบ',
+                                    customClass: { popup: 'font-thai' }
+                                });
+                            } 
+                            // ถ้าเช็คครบจำนวนแล้วแต่ยังไม่ done
+                            else if (checkCount >= maxChecks) {
+                                stopAutoCheck();
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'หมดเวลาตรวจสอบ',
+                                    html: `
+                                        <div class="text-left font-thai">
+                                            <p class="mb-2">ระบบยังคงทำงานอยู่</p>
+                                            <div class="bg-slate-50 p-3 rounded text-sm">
+                                                <p><strong>สถานะปัจจุบัน:</strong> ${data.status}</p>
+                                                <p><strong>Stage:</strong> ${data.stage || '-'}</p>
+                                            </div>
+                                            <p class="mt-2 text-sm text-slate-600">คุณสามารถโหลดหน้าใหม่เพื่อดูสถานะล่าสุด</p>
+                                        </div>
+                                    `,
+                                    confirmButtonText: 'รับทราบ',
+                                    customClass: { popup: 'font-thai' }
+                                });
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error checking status:', err);
+                    });
+            }, 3000); // เช็คทุก 3 วินาที
+        }
+
+        // ฟังก์ชันหยุด Auto Check
+        function stopAutoCheck() {
+            if (autoCheckInterval) {
+                clearInterval(autoCheckInterval);
+                autoCheckInterval = null;
+            }
+            const indicator = document.getElementById('autoCheckIndicator');
+            indicator.classList.add('hidden'); // ซ่อน loading indicator
+            console.log('Auto check stopped');
+        }
+
+        // ฟังก์ชันสำหรับปุ่มอัพเดทข้อมูล - เซ็ต status เป็น TRUE และเริ่ม Auto Check
+        function updateBotStatus() {
+            const updateBtn = document.getElementById('updateBotBtn');
+            updateBtn.disabled = true;
+            updateBtn.innerHTML = `
+                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>กำลังอัพเดท...</span>
+            `;
 
             fetch(CONFIG_URL, {
                 method: 'POST',
                 body: JSON.stringify({
-                    action: 'toggleBotStatus'
+                    action: 'updateBotStatus'
                 })
             })
                 .then(r => r.json())
                 .then(result => {
+                    updateBtn.disabled = false;
+                    updateBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        <span>อัพเดทข้อมูล</span>
+                    `;
+
                     if (result.success) {
                         Swal.fire({
                             icon: 'success',
-                            title: 'สำเร็จ',
-                            text: result.message,
+                            title: 'เริ่มกระบวนการแล้ว',
+                            html: `
+                                <div class="font-thai text-left">
+                                    <p class="mb-2">${result.message}</p>
+                                    <div class="bg-blue-50 p-3 rounded text-sm">
+                                        <p>✓ ระบบกำลังเช็คสถานะอัตโนมัติทุก 3 วินาที</p>
+                                        <p>✓ จะแจ้งเตือนเมื่อกระบวนการเสร็จสิ้น</p>
+                                    </div>
+                                </div>
+                            `,
+                            confirmButtonText: 'รับทราบ',
                             customClass: {
                                 popup: 'font-thai'
                             }
                         });
+                        
                         loadBotStatus(); // โหลดข้อมูลใหม่
+                        startAutoCheck(); // เริ่มเช็คอัตโนมัติ
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -947,10 +1074,16 @@ async function savePermanentHolidays() {
                                 popup: 'font-thai'
                             }
                         });
-                        loadBotStatus(); // โหลดข้อมูลเดิมกลับมา
                     }
                 })
                 .catch(err => {
+                    updateBtn.disabled = false;
+                    updateBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        <span>อัพเดทข้อมูล</span>
+                    `;
                     Swal.fire({
                         icon: 'error',
                         title: 'ผิดพลาด',
@@ -959,9 +1092,8 @@ async function savePermanentHolidays() {
                             popup: 'font-thai'
                         }
                     });
-                    loadBotStatus(); // โหลดข้อมูลเดิมกลับมา
                 });
-        });
+        }
     </script>
 </body>
 
