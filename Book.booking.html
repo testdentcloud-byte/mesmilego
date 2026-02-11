@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Me-smile | Booking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js" defer></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Thai:wght@400;700&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        :root {
+            /* Brand palette - Me Smile Dental */
+            --primary: #00b8b0;
+            --primary-light: #33d1c9;
+            --accent: #b4dd2f;
+            /* Backgrounds */
+            --bg: #f0fffc;
+            --bg-card: #ffffff;
+            --bg-element: #ffffff;
+            /* Borders */
+            --border: #c9efe9;
+            /* Overlays */
+            --overlay-bg: rgba(0, 184, 176, 0.25);
+            --popup-overlay: rgba(0, 0, 0, 0.45);
+            /* Text */
+            --text-main: #024a4e;
+            --text-main2: #6bbf00;
+            --text-placeholder: #79a7ab;
+            --text-error: #f87171;
+            /* Badges */
+            --badge-available-bg: #f2fadf;
+            --badge-available-text: #4d8a00;
+            --badge-full-bg: #ffeaea;
+            --badge-full-text: #b91c1c;
+        }
+
+        /* Utility classes */
+        .bg-base {
+            background-color: var(--bg) !important;
+        }
+
+        .bg-card {
+            background-color: var(--bg-card) !important;
+        }
+
+        .bg-element {
+            background-color: var(--bg-element) !important;
+        }
+
+        .border-element {
+            border: 1px solid var(--border) !important;
+        }
+
+        .text-base {
+            color: var(--text-main) !important;
+        }
+
+        .text-placeholder {
+            color: var(--text-placeholder) !important;
+        }
+
+        .text-error {
+            color: var(--text-error) !important;
+        }
+
+        /* Overlays */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay-bg);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        .loading-overlay.visible {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ---- Loading Animation ---- */
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 184, 176, 0.15);
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        .service-loader {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-bottom-color: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        .loading-text {
+            color: var(--text-placeholder);
+            font-size: 0.9rem;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--popup-overlay);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        .popup.visible {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .popup-content {
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 18px 30px -12px rgba(0, 184, 176, 0.25);
+            border-top: 6px solid var(--accent);
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+            margin: 0;
+            background-color: var(--bg);
+            color: var(--text-main);
+            overscroll-behavior-y: contain;
+        }
+
+        ::selection {
+            background-color: var(--primary);
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.4s ease-in;
+        }
+
+        input[type='text'],
+        input[type='tel'],
+        textarea,
+        select {
+            background-color: var(--bg-element);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            width: 100%;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--text-placeholder);
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(0, 184, 176, 0.25);
+        }
+
+        #inlineCalendar-wrapper {
+            background-color: var(--bg-card);
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .flatpickr-calendar {
+            background: transparent !important;
+            box-shadow: none !important;
+            width: 100% !important;
+            max-width: 320px;
+            margin: auto;
+        }
+
+        .flatpickr-day {
+            color: var(--text-main) !important;
+            background: transparent !important;
+            border-radius: 0.375rem;
+            margin: 1px;
+            width: 40px !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .flatpickr-day:hover {
+            background-color: rgba(0, 184, 176, 0.1);
+        }
+
+        .flatpickr-day.today {
+            border-color: var(--primary-light) !important;
+        }
+
+
+        .flatpickr-day.selected {
+            background: var(--primary) !important;
+            color: #fff !important;
+        }
+
+        /* Holiday day style for flatpickr */
+        .flatpickr-day.holiday-day {
+            background: #fee2e2 !important;
+            /* red-100 */
+            color: #b91c1c !important;
+            /* red-700 */
+            border-radius: 0.375rem !important;
+        }
+
+        .flatpickr-day.flatpickr-disabled,
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            color: var(--text-placeholder) !important;
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            visibility: hidden;
+        }
+
+        #timeDropdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .time-option {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background: var(--bg-element);
+            color: var(--text-main);
+            border: 1px solid transparent;
+            box-shadow: 0 6px 16px rgba(0, 184, 176, 0.12);
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .time-option:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0, 184, 176, 0.18);
+        }
+
+        .time-option.selected {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 14px 28px rgba(0, 184, 176, 0.35);
+        }
+
+        .badge {
+            border-radius: 9999px;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            min-width: 3rem;
+            text-align: center;
+        }
+
+        .badge.available {
+            background: var(--badge-available-bg);
+            color: var(--badge-available-text);
+        }
+
+        .badge.full {
+            background: var(--badge-full-bg);
+            color: var(--badge-full-text);
+        }
+
+        .time-option.opacity-50 {
+            opacity: 0.6;
+            pointer-events: none;
+            background-color: var(--border);
+        }
+
+        .time-option.opacity-50:hover {
+            transform: none;
+            border-color: transparent;
+        }
+
+        .step {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 12px 32px rgba(0, 184, 176, 0.12);
+            border: 1px solid rgba(0, 184, 176, 0.08);
+        }
+
+        .step:not(.step-active) {
+            opacity: 0;
+            transform: translateY(15px);
+            pointer-events: none;
+        }
+
+        .step.step-active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #serviceCards .service-card {
+            background: var(--bg-element);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #serviceCards .service-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 184, 176, 0.18);
+        }
+
+        #serviceCards .service-card.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 184, 176, 0.35);
+        }
+
+        .service-card .checkmark {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: checkmark-pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .service-card.selected .checkmark {
+            display: flex;
+        }
+
+        @keyframes checkmark-pop {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2) rotate(180deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(180deg);
+                opacity: 1;
+            }
+        }
+
+        .checkmark svg {
+            width: 14px;
+            height: 14px;
+            stroke: white;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .btn {
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            outline: none;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background: #f5fffd;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(0, 184, 176, 0.08);
+        }
+
+        .btn-loading {
+            pointer-events: none;
+        }
+
+        .btn-loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin-top: -10px;
+            margin-left: -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+
+        .tab-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: var(--bg-element);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .tab-toggle.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 8px 18px rgba(0, 184, 176, 0.35);
+        }
+
+        .tab-toggle:not(.active):hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .table-head-cell {
+            background: linear-gradient(135deg, var(--primary) 0%, #00c7bf 50%, #00b8b0 100%);
+            color: #ffffff;
+        }
+
+        .text-primary {
+            color: var(--primary) !important;
+        }
+
+        #header {
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, #ffffff 0%, #f3fffb 55%, #ecffe7 100%);
+            box-shadow: 0 15px 30px rgba(0, 184, 176, 0.18);
+        }
+
+        .history-toggle {
+            background: var(--primary) !important;
+            color: #ffffff !important;
+            border: none;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .history-toggle:hover {
+            background: var(--primary-light) !important;
+            transform: translateY(-1px);
+        }
+
+        .history-confirm {
+            background: var(--accent) !important;
+            color: var(--text-main) !important;
+            border: 1px solid transparent;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .history-confirm:hover:not(:disabled) {
+            background: #a3d226 !important;
+            box-shadow: 0 6px 14px rgba(180, 221, 47, 0.35);
+        }
+
+        .history-confirm:disabled,
+        .history-cancel:disabled {
+            cursor: not-allowed;
+            opacity: 0.55 !important;
+            box-shadow: none !important;
+        }
+
+        .history-cancel {
+            background: #ff7474 !important;
+            border: 1px solid transparent;
+            transition: background 0.2s ease;
+        }
+
+        .history-cancel:hover:not(:disabled) {
+            background: #ff8b8b !important;
+        }
+
+        .pagination-btn {
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: var(--text-main);
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+        }
+
+        .pagination-btn:hover {
+            background: rgba(0, 184, 176, 0.12);
+        }
+
+        .pagination-btn.is-active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 8px 18px rgba(0, 184, 176, 0.35);
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-b from-[#e0fff7] via-[#f8ffe9] to-white min-h-screen relative bg-fixed ">
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+    <div class="popup" id="popup">
+        <div class="popup-content" id="popupContent"></div>
+    </div>
+    <div id="customAlertOverlay"
+        class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50 px-4">
+        <div class="bg-white p-6 rounded-xl shadow-xl text-center w-full max-w-sm">
+            <p id="customAlertMessage" class="mb-4 text-gray-700 text-sm"></p>
+        </div>
+    </div>
+
+    <div id="appContainer" class="w-full max-w-md mx-auto p-4 flex-1 flex flex-col"
+        style="opacity: 0; transition: opacity 0.5s ease-in-out; display: none;">
+        <div id="header" class="flex items-center border bg-white rounded-lg p-4">
+            <img id="greetingAvatar" src alt="Avatar"
+                class="w-12 h-12 rounded-full object-cover border-2 border-element mr-4" />
+            <div>
+                <p id="greetingPrefix" class="text-xs">สวัสดีตอนเช้า</p>
+                <h1 id="greetingName" class="text-primary font-bold text-lg"> LINE NAME </h1>
+            </div>
+            <div class="ml-auto flex items-center gap-2">
+                <select id="languageSwitcher"
+                    class="bg-element border-element rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-light">
+                    <option value="th">ไทย</option>
+                    <option value="en">English</option>
+                    <option value="my">မြန်မာ</option>
+                    <option value="km">ខ្មែរ</option>
+                </select>
+                <img src="https://llll12t.github.io/Me-smile/me%20smile.jpg" alt="Logo"
+                    class="w-10 h-10 object-contain rounded-md" />
+            </div>
+        </div>
+        <div class="grid grid-cols-1 gap-2 mt-4">
+            <button id="bookingTab" type="button" class="tab-toggle active" data-translate-key="tab.booking"></button>
+            <button id="historyTab" type="button" class="tab-toggle hidden" data-translate-key="tab.history"></button>
+        </div>
+
+        <section id="bookingSection" class="mt-4">
+            <form id="bookingForm" novalidate class="flex flex-col flex-1 relative">
+                <div class="step step-active" id="step1">
+                    <label class="block mb-3 text-lg text-center text-base font-semibold"
+                        data-translate-key="step1.title"></label>
+                    <div id="serviceCards" class="grid grid-cols-2 gap-4 mb-6"></div>
+                    <button type="button" id="nextToStep2" class="btn btn-primary w-full"
+                        data-translate-key="step1.button"></button>
+                </div>
+
+                <div class="step hidden" id="step2">
+                    <label class="block mb-1 text-center text-base font-semibold"
+                        data-translate-key="step2.dateLabel"></label>
+                    <div id="inlineCalendar-wrapper" class="mb-4">
+                        <div id="inlineCalendar"></div>
+                    </div>
+                    <label class="block mb-2 text-center text-base font-semibold"
+                        data-translate-key="step2.timeLabel"></label>
+                    <div id="timeDropdown" class="mb-6 min-h-[50px]">
+                        <div class="text-placeholder text-sm text-center py-2 col-span-full"
+                            data-translate-key="step2.placeholder"></div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="button" id="backToStep1" class="btn btn-secondary flex-1"
+                            data-translate-key="step2.back"></button>
+                        <button type="button" id="nextToStep3" class="btn btn-primary flex-1"
+                            data-translate-key="step2.next"></button>
+                    </div>
+                </div>
+
+                <div class="step hidden" id="step3">
+                    <label class="block mb-3 text-lg text-center text-base font-semibold"
+                        data-translate-key="step3.title"></label>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="first_name" name="first_name"
+                            data-translate-key-placeholder="step3.firstNamePlaceholder" placeholder="ชื่อจริง"
+                            class="border-element flex-1" required />
+                        <input type="text" id="last_name" name="last_name"
+                            data-translate-key-placeholder="step3.lastNamePlaceholder" placeholder="นามสกุล"
+                            class="border-element flex-1" required />
+                    </div>
+                    <input type="tel" id="phonenumber" name="phonenumber"
+                        data-translate-key-placeholder="step3.phonePlaceholder" placeholder="เบอร์ติดต่อ"
+                        class="mb-3 border-element" required />
+                    <input type="text" id="id_card_or_social" name="id_card_or_social"
+                        data-translate-key-placeholder="step3.idCardOrSocialPlaceholder"
+                        placeholder="เลขที่บัตรประชาชน/เลขที่ประกันสังคม" class="mb-3 border-element" required />
+                    <input type="text" id="disease_allergy" name="disease_allergy"
+                        data-translate-key-placeholder="step3.diseaseAllergyPlaceholder"
+                        placeholder="โรคประจำตัว/อาการแพ้ (ถ้ามี)" class="mb-3 border-element" />
+                    <textarea id="note" name="note" rows="3" data-translate-key-placeholder="step3.notePlaceholder"
+                        placeholder="หมายเหตุ (ถ้ามี)" class="mb-6 p-2 resize-none border-element"></textarea>
+                    <div class="flex space-x-3">
+                        <button type="button" id="backToStep2" class="btn btn-secondary flex-1"
+                            data-translate-key="step3.back"></button>
+                        <button type="button" id="nextToStep4" class="btn btn-primary flex-1"
+                            data-translate-key="step3.next"></button>
+                    </div>
+                </div>
+
+                <div class="step hidden" id="step4">
+                    <label class="block mb-3 text-lg text-center text-base font-semibold"
+                        data-translate-key="step4.title"></label>
+                    <div class="bg-card p-4 rounded-lg mb-6 space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.serviceLabel"></span><span id="confirmService"
+                                class="font-semibold"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.dateLabel"></span><span id="confirmDate"
+                                class="font-semibold"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.timeLabel"></span><span id="confirmTime"
+                                class="font-semibold"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.nameLabel"></span><span id="confirmName"
+                                class="font-semibold text-right"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.phoneLabel"></span><span id="confirmPhone"
+                                class="font-semibold"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.idCardOrSocialLabel"></span><span id="confirmIdCardOrSocial"
+                                class="font-semibold text-right"></span></div>
+                        <div class="flex justify-between items-center border-b pb-2"><span
+                                data-translate-key="step4.diseaseAllergyLabel"></span><span id="confirmDiseaseAllergy"
+                                class="font-semibold text-right"></span></div>
+                        <div class="flex justify-between items-start pt-1"><span
+                                data-translate-key="step4.noteLabel"></span><span id="confirmNote"
+                                class="font-semibold text-right max-w-[60%] break-words"></span></div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="button" id="backToStep3" class="btn btn-secondary flex-1"
+                            data-translate-key="step4.back"></button>
+                        <button type="submit" id="confirmBooking" class="btn btn-primary flex-1"
+                            data-translate-key="step4.confirm"></button>
+                    </div>
+                </div>
+
+                <input type="hidden" id="time" name="time" /><input type="hidden" id="selectedServices"
+                    name="selectedServices" /><input type="hidden" id="selectedServiceNames"
+                    name="selectedServiceNames" /><input type="hidden" id="userlineid" name="userlineid" value /><input
+                    type="hidden" name="action" value="makeBooking" />
+            </form>
+        </section>
+
+        <section id="historySection" class="hidden mt-6">
+            <div class="flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                    <h2 id="historyTitle" class="text-lg font-bold" data-translate-key="history.title"></h2>
+                    <div class="flex gap-2">
+                        <select id="statusFilter" class="p-2 border-element rounded-lg bg-element text-sm">
+                            <option value="" data-tkey="history.status.all">ทั้งหมด</option>
+                            <option value="รอการยืนยัน" data-tkey="history.status.pending">รอการยืนยัน</option>
+                            <option value="ยืนยันแล้ว" data-tkey="history.status.confirmed">ยืนยันแล้ว</option>
+                            <option value="ยกเลิก" data-tkey="history.status.cancelled">ยกเลิก</option>
+                            <option value="เสร็จสิ้น" data-tkey="history.status.completed">เสร็จสิ้น</option>
+                        </select>
+                        <select id="dateSort" class="p-2 border-element rounded-lg bg-element text-sm">
+                            <option value="latest" data-tkey="history.sort.latest">วันที่ล่าสุด</option>
+                            <option value="oldest" data-tkey="history.sort.oldest">วันที่เก่าสุด</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="rounded-lg shadow bg-card border border-element overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="table-head-cell p-2 text-left" data-tkey="history.col.name">ชื่อ-นามสกุล</th>
+                                <th class="table-head-cell p-2 text-left" data-tkey="history.col.date">วันที่</th>
+                                <th class="table-head-cell p-2 text-center" data-tkey="history.col.status">สถานะ</th>
+                                <th class="table-head-cell p-2 text-center" data-tkey="history.col.view">ดู</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataBody"></tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="flex justify-center items-center flex-wrap gap-2"></div>
+                <input type="hidden" id="useridlineFilter" />
+            </div>
+        </section>
+    </div>
+
+    <!-- Branch Selection Section (First Step) -->
+    <div id="branchSection" class="w-full max-w-md mx-auto p-4 flex items-center justify-center min-h-screen">
+        <div class="step step-active w-full mt-8 pb-8">
+            <img src="https://llll12t.github.io/Me-smile/me%20smile.jpg" alt="Logo"
+                class="w-24 h-24 object-container mx-auto m-10 rounded-md" />
+            <label class="block mb-3 text-lg text-center text-base font-semibold">เลือกสาขา</label>
+            <div class="flex flex-col gap-4 w-full max-w-xs mx-auto">
+                <button type="button" class="btn btn-primary branch-btn" data-branch="1">CPF มีนบุรี 1</button>
+                <button type="button" class="btn btn-primary branch-btn" data-branch="2">CPF มีนบุรี 2</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="language.js"></script>
+    <script src="Config.js"></script>
+
+    <script>
+        const ENABLE_LIFF = false; // เปลี่ยนเป็น true เพื่อเปิดใช้งาน LIFF
+        const $ = (id) => document.getElementById(id);
+
+        const defaultLang = 'th';
+        let currentLang = defaultLang;
+
+        let monthAvailability = {}, selectedDate = '';
+        let currentVisibleStep = 'step1';
+        let flatpickrInstance = null;
+        let servicesLoaded = false;
+        const historyState = {
+            records: [],
+            filtered: [],
+            page: 1,
+            itemsPerPage: 10,
+            loaded: false,
+            loading: false
+        };
+        let historyFirstLoadPending = true;
+
+        const t = (key) => {
+            if (translations[currentLang] && key in translations[currentLang]) {
+                return translations[currentLang][key];
+            }
+            if (translations[defaultLang] && key in translations[defaultLang]) {
+                return translations[defaultLang][key];
+            }
+            return key;
+        };
+
+        // ฟังก์ชันแปลชื่อบริการ (เข้มแข็ง: trim/normalize และลองหลาย fallback)
+        function normalizeServiceKey(name) {
+            if (!name && name !== 0) return '';
+            // trim whitespace and normalize multiple spaces
+            return String(name).replace(/\s+/g, ' ').trim();
+        }
+
+        function translateServiceName(serviceName, lang = currentLang) {
+            const orig = normalizeServiceKey(serviceName);
+            if (!orig) return serviceName || '';
+
+            const tryKeys = [
+                `service.${orig}`,
+                `service.${orig.replace(/\s+/g, '')}` // fallback without spaces
+            ];
+
+            // Try current language first
+            for (const k of tryKeys) {
+                const v = translations[lang]?.[k];
+                if (v) return v;
+            }
+
+            // Fallback to default language
+            if (lang !== defaultLang) {
+                for (const k of tryKeys) {
+                    const v = translations[defaultLang]?.[k];
+                    if (v) return v;
+                }
+            }
+
+            return orig;
+        }
+
+        // ฟังก์ชันอัปเดตภาษาของบริการ
+        function updateServiceLanguage(lang, targetContainer = null) {
+            const serviceCards = targetContainer || $('#serviceCards');
+            if (!serviceCards) return;
+
+            [...serviceCards.children].forEach(card => {
+                const originalName = normalizeServiceKey(card.dataset.originalName || card.dataset.name || '');
+                const translatedName = translateServiceName(originalName, lang);
+                // ใช้ class selector ใหม่ที่ชัดเจนกว่า
+                const nameDiv = card.querySelector('.service-name');
+                if (nameDiv) {
+                    nameDiv.textContent = translatedName;
+                    console.log('Updated service:', originalName, '→', translatedName);
+                }
+            });
+        }
+
+        // Pre-load only Thai locale for flatpickr (most common)
+        const flatpickrLocalesLoaded = {};
+
+        function loadFlatpickrLocale(lang) {
+            return new Promise((resolve) => {
+                if (lang === 'en' || lang === 'my' || flatpickrLocalesLoaded[lang]) {
+                    return resolve();
+                }
+
+                const script = document.createElement('script');
+                script.src = `https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/${lang}.js`;
+                script.onload = () => {
+                    flatpickrLocalesLoaded[lang] = true;
+                    resolve();
+                };
+                script.onerror = () => {
+                    flatpickrLocalesLoaded[lang] = true;
+                    resolve();
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        async function setLanguage(lang) {
+            console.log('setLanguage called with:', lang);
+            currentLang = translations[lang] ? lang : defaultLang;
+            console.log('currentLang set to:', currentLang);
+            localStorage.setItem('booking_lang', currentLang);
+            document.documentElement.lang = currentLang;
+
+            // สร้างฟังก์ชัน t แบบ local สำหรับภาษาใหม่
+            const tLocal = (key) => {
+                if (translations[currentLang] && key in translations[currentLang]) {
+                    return translations[currentLang][key];
+                }
+                if (translations[defaultLang] && key in translations[defaultLang]) {
+                    return translations[defaultLang][key];
+                }
+                return key;
+            };
+
+            // Optimize: Update all translatable elements in one pass
+            document.querySelectorAll('[data-translate-key], [data-translate-key-placeholder], [data-tkey], [data-tkey-placeholder]').forEach(el => {
+                if (el.hasAttribute('data-translate-key')) {
+                    el.textContent = tLocal(el.dataset.translateKey);
+                }
+                if (el.hasAttribute('data-translate-key-placeholder')) {
+                    el.placeholder = tLocal(el.dataset.translateKeyPlaceholder);
+                }
+                if (el.hasAttribute('data-tkey')) {
+                    el.textContent = tLocal(el.dataset.tkey);
+                }
+                if (el.hasAttribute('data-tkey-placeholder')) {
+                    el.placeholder = tLocal(el.dataset.tkeyPlaceholder);
+                }
+            });
+
+            // อัปเดตข้อความทักทาย
+            $('greetingPrefix').textContent = tLocal(getGreeting(new Date().getHours()));
+
+            // Update Flatpickr locale without destroying
+            if (flatpickrInstance) {
+                const localeMap = {
+                    th: window.flatpickr?.l10ns?.th,
+                    en: window.flatpickr?.l10ns?.default,
+                    my: window.flatpickr?.l10ns?.default,
+                    km: window.flatpickr?.l10ns?.km || window.flatpickr?.l10ns?.default
+                };
+                const locale = localeMap[currentLang] || window.flatpickr?.l10ns?.default;
+                if (locale) {
+                    const customLocale = { ...locale, firstDayOfWeek: 0 };
+                    flatpickrInstance.set('locale', customLocale);
+                    flatpickrInstance.redraw();
+                }
+            }
+
+            if (!selectedDate) {
+                const timeDropdownEl = $('#timeDropdown');
+                if (timeDropdownEl) {
+                    timeDropdownEl.innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${tLocal('step2.placeholder')}</div>`;
+                }
+            }
+
+            // รีโหลดบริการทั้งหมดเมื่อเปลี่ยนภาษา (วิธีเดิม)
+            try {
+                console.log('setLanguage: reloading services for language:', currentLang);
+                await fetchServiceData(true); // force refresh
+            } catch (e) {
+                console.warn('setLanguage: fetchServiceData failed', e);
+            }
+
+            // อัปเดตข้อมูลใน step4 ถ้าอยู่ในหน้านั้น
+            if (currentVisibleStep === 'step4') {
+                updateConfirmation();
+            }
+
+            if (historyState.loaded) {
+                applyHistoryFilters();
+            }
+        }
+
+        function showLoading(on) {
+            const overlay = $('loadingOverlay');
+            if (on) {
+                overlay.style.display = 'flex';
+                setTimeout(() => overlay.classList.add('visible'), 10);
+            } else {
+                overlay.classList.remove('visible');
+                setTimeout(() => {
+                    if (!overlay.classList.contains('visible'))
+                        overlay.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        // inline service-loading UI (spinner inside serviceCards) and control disabling
+        function setServiceLoading(on) {
+            const container = $('serviceCards');
+            const nextBtn = $('nextToStep2');
+            const langSwitch = $('languageSwitcher');
+            if (!container) return;
+            if (on) {
+                // show enhanced loading state with spinner and text
+                container.innerHTML = `
+                    <div class="col-span-2 flex flex-col items-center justify-center py-8">
+                        <div class="flex items-center mb-3">
+                            <div class="service-loader"></div>
+                        </div>
+                    </div>
+                `;
+                if (nextBtn) {
+                    nextBtn.disabled = true;
+                    nextBtn.classList.add('btn-loading');
+                }
+                if (langSwitch) {
+                    langSwitch.disabled = true;
+                    langSwitch.style.opacity = '0.6';
+                }
+            } else {
+                if (nextBtn) {
+                    nextBtn.disabled = false;
+                    nextBtn.classList.remove('btn-loading');
+                }
+                if (langSwitch) {
+                    langSwitch.disabled = false;
+                    langSwitch.style.opacity = '1';
+                }
+            }
+        }
+
+        function showPopup(msgKey, isSuccess = false, isRawMessage = false) {
+            const msg = isRawMessage ? msgKey : t(msgKey);
+            showLoading(false);
+            const icon = isSuccess ?
+                `<svg class="w-12 h-12 text-base mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>` :
+                `<svg class="w-12 h-12 text-error mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+
+                        $('popupContent').innerHTML = `
+                    <div class="py-4 text-center">${icon}<p>${msg}</p></div>
+                    <div class="mt-4 text-center">
+                        <button id="popupCloseBtn" class="btn btn-secondary w-full sm:w-auto px-6">${t('popup.close')}</button>
+                    </div>`;
+                        // Add LIFF close logic for booking success
+                        setTimeout(() => {
+                                const btn = document.getElementById('popupCloseBtn');
+                                if (btn) {
+                                        btn.onclick = function() {
+                                                hidePopup();
+                                                if (msgKey === 'popup.bookingSuccess' && window.liff && typeof liff.closeWindow === 'function') {
+                                                        liff.closeWindow();
+                                                }
+                                        };
+                                }
+                        }, 0);
+            const popupEl = $('popup');
+            popupEl.style.display = 'flex';
+            setTimeout(() => popupEl.classList.add('visible'), 10);
+        }
+
+        function hidePopup() {
+            const popupEl = $('popup');
+            popupEl.classList.remove('visible');
+            setTimeout(() => {
+                if (!popupEl.classList.contains('visible'))
+                    popupEl.style.display = 'none';
+            }, 300);
+        }
+
+        function navigateToStep(target) {
+            if (currentVisibleStep === target) return;
+            const prev = $(currentVisibleStep),
+                next = $(target);
+            prev.classList.remove('step-active');
+            prev.addEventListener('transitionend', function onEnd() {
+                prev.classList.add('hidden');
+                prev.removeEventListener('transitionend', onEnd);
+            });
+            next.classList.remove('hidden');
+            requestAnimationFrame(() => next.classList.add('step-active'));
+            currentVisibleStep = target;
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function getGreeting(hour) {
+            if (hour < 12) return 'greeting.morning';
+            if (hour < 13) return 'greeting.noon';
+            if (hour < 17) return 'greeting.afternoon';
+            if (hour < 19) return 'greeting.evening';
+            return 'greeting.night';
+        }
+
+        async function initLiff() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) return liff.login();
+                const p = await liff.getProfile();
+                $('greetingName').textContent = p.displayName;
+                if (p.pictureUrl) $('greetingAvatar').src = p.pictureUrl;
+                else $('greetingAvatar').style.display = 'none';
+                $('userlineid').value = p.userId;
+                setHistoryUserId(p.userId);
+            } catch {
+                offlineProfile();
+            }
+        }
+
+        function offlineProfile() {
+            $('greetingName').textContent = 'ผู้ใช้งานทดสอบ';
+            $('greetingAvatar').style.display = 'none';
+            $('userlineid').value = 'OFFLINE';
+            setHistoryUserId('OFFLINE');
+        }
+
+        async function fetchMonthAvailability(year, month) {
+            const branch = localStorage.getItem('selectedBranch') || '1';
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=getMonthAvailability&year=${year}&month=${('0' + month).slice(-2)}&branch=${branch}`);
+                if (!res.ok) throw new Error();
+                monthAvailability = await res.json();
+            } catch {
+                monthAvailability = {};
+                showPopup('popup.calendarError');
+            }
+        }
+
+        async function fetchServiceData() {
+            setServiceLoading(true);
+            const branch = localStorage.getItem('selectedBranch') || '1';
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=fetchServices&branch=${branch}`);
+                if (!res.ok) throw new Error();
+                const services = await res.json();
+                renderServices(services);
+            } catch (err) {
+                console.error('fetchServiceData error', err);
+            } finally {
+                setServiceLoading(false);
+            }
+        }
+
+        function renderServices(services) {
+            const container = $('serviceCards');
+            if (!services.length) {
+                container.innerHTML = `<p class="text-center col-span-2">${t('service.noService')}</p>`;
+                servicesLoaded = true;
+                return;
+            }
+
+            container.innerHTML = '';
+            services.forEach((s, index) => {
+                const c = document.createElement('div');
+                c.className = 'service-card p-8 border-element rounded-lg cursor-pointer shadow-sm';
+                c.dataset.id = s.id;
+                c.dataset.name = s.name;
+                c.dataset.originalName = normalizeServiceKey(s.name || '');
+                c.dataset.price = s.price;
+                const translatedName = translateServiceName(c.dataset.originalName, currentLang);
+
+                // สร้าง elements แยกเพื่อให้สามารถอัปเดตได้
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'font-bold text-md mb-1 text-primary-light service-name';
+                nameDiv.textContent = translatedName;
+
+                const checkmarkDiv = document.createElement('div');
+                checkmarkDiv.className = 'checkmark';
+                checkmarkDiv.innerHTML = `
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                `;
+
+                c.appendChild(nameDiv);
+                c.appendChild(checkmarkDiv);
+
+                c.onclick = () => {
+                    // จำกัดให้เลือกได้แค่บริการเดียว - ยกเลิกการเลือกอื่นทั้งหมด
+                    const allCards = [...container.children];
+                    allCards.forEach(card => card.classList.remove('selected'));
+
+                    // เลือกบริการปัจจุบัน
+                    c.classList.add('selected');
+                    updateSelectedServices();
+                };
+                container.appendChild(c);
+            });
+
+            servicesLoaded = true;
+        }
+
+        async function fetchHolidayDates() {
+            const branch = localStorage.getItem('selectedBranch') || '1';
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&getHolidays=true&branch=${branch}`);
+                if (!res.ok) throw new Error();
+                const j = await res.json();
+                // Workday mode: default ปิดทุกวัน แล้วเปิดตามวันทำงานเท่านั้น
+                window.specialWorkdays = Array.isArray(j.workdays)
+                    ? j.workdays
+                    : (Array.isArray(j.holidays) ? j.holidays : []);
+                window.weeklyWorkdays = Array.isArray(j.weeklyWorkdays)
+                    ? j.weeklyWorkdays
+                    : (Array.isArray(j.permanentHolidays) ? j.permanentHolidays : []);
+            } catch {
+                window.specialWorkdays = [];
+                window.weeklyWorkdays = [];
+            }
+        }
+
+        function formatDate(d) {
+            const y = d.getFullYear();
+            const m = ('0' + (d.getMonth() + 1)).slice(-2);
+            const da = ('0' + d.getDate()).slice(-2);
+            return `${y}-${m}-${da}`;
+        }
+
+        function initCalendar() {
+            const localeMap = {
+                th: window.flatpickr.l10ns.th,
+                en: window.flatpickr.l10ns.default,
+                my: window.flatpickr.l10ns.default,
+                lo: window.flatpickr.l10ns.lo || window.flatpickr.l10ns.default
+            };
+            const baseLocale = localeMap[currentLang] || window.flatpickr.l10ns.default;
+            const customLocale = {
+                ...(baseLocale || {}), // คัดลอกค่าภาษาที่เลือกมาทั้งหมด
+                firstDayOfWeek: 0 // กำหนดให้วันอาทิตย์ (0) เป็นวันแรก
+            };
+            flatpickrInstance = flatpickr('#inlineCalendar', {
+                inline: true,
+                locale: customLocale,
+                dateFormat: 'Y-m-d',
+                minDate: 'tomorrow',
+                disable: [(d) => {
+                    const k = formatDate(d);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const checkDate = new Date(d);
+                    checkDate.setHours(0, 0, 0, 0);
+
+                    // ห้ามเลือกวันปัจจุบันหรือวันที่ผ่านมาแล้ว
+                    if (checkDate <= today) return true;
+
+                    const isWorkingDay = (window.weeklyWorkdays || []).includes(d.getDay())
+                        || (window.specialWorkdays || []).includes(k);
+                    return !isWorkingDay || monthAvailability[k] === 'full';
+                }],
+                onDayCreate: (dObj, dStr, fp, dayElem) => {
+                    const k = formatDate(dayElem.dateObj);
+                    const date = dayElem.dateObj;
+                    const isWorkingDay = (window.weeklyWorkdays || []).includes(date.getDay())
+                        || (window.specialWorkdays || []).includes(k);
+                    if (!isWorkingDay) {
+                        dayElem.classList.add('holiday-day');
+                        // Show only the date number (remove extra text)
+                        dayElem.innerHTML = `<span>${date.getDate()}</span>`;
+                    }
+                },
+                onMonthChange: async (_, __, fp) => {
+                    showLoading(true);
+                    await fetchMonthAvailability(fp.currentYear, fp.currentMonth + 1);
+                    fp.redraw();
+                    showLoading(false);
+                },
+                onChange: (_, dateStr) => {
+                    selectedDate = dateStr;
+                    if (dateStr) checkAvailability(dateStr);
+                    else $('timeDropdown').innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${t('step2.placeholder')}</div>`;
+                },
+            });
+        }
+
+        async function checkAvailability(dateStr) {
+            $('timeDropdown').innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${t('step2.loading')}</div>`;
+            try {
+                const branch = localStorage.getItem('selectedBranch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&date=${dateStr}&branch=${branch}`);
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                renderTimes(data.availability);
+            } catch (e) {
+                $('timeDropdown').innerHTML = `<div class="text-error text-sm text-center py-2 col-span-full">${t('step2.error')}</div>`;
+                showPopup(e.message || 'popup.timeError', false, true);
+            }
+        }
+
+        function renderTimes(avail) {
+            const td = $('timeDropdown');
+            td.innerHTML = '';
+
+            // กรองเฉพาะช่วงเวลาที่ยังว่าง
+            const availableTimes = Object.entries(avail).filter(([_, i]) => i.remaining > 0);
+
+            if (!availableTimes.length) {
+                td.innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${t('step2.noTime')}</div>`;
+                return;
+            }
+
+            availableTimes.forEach(([t, i]) => {
+                const div = document.createElement('div');
+                div.className = 'time-option';
+                div.innerHTML = `<span>${t}</span><span class="badge available">${i.remaining}/${i.total}</span>`;
+                div.onclick = () => selectTime(t, div);
+                td.appendChild(div);
+            });
+        }
+
+        function selectTime(t, el) {
+            [...$('timeDropdown').children].forEach((c) => c.classList.remove('selected'));
+            el.classList.add('selected');
+            $('time').value = t;
+        }
+
+        function updateSelectedServices() {
+            const serviceCardsEl = $('serviceCards');
+            if (!serviceCardsEl) return;
+            const sel = [...serviceCardsEl.children].filter((c) => c.classList.contains('selected'));
+            $('selectedServices').value = JSON.stringify(sel.map((c) => c.dataset.id));
+            $('selectedServiceNames').value = sel.map((c) => translateServiceName(normalizeServiceKey(c.dataset.originalName || c.dataset.name || ''), currentLang)).join(', ');
+
+            // Update button state based on selection
+            const nextBtn = $('nextToStep2');
+            if (nextBtn) {
+                if (sel.length > 0) {
+                    nextBtn.classList.remove('opacity-50');
+                    nextBtn.style.background = 'var(--primary)';
+                } else {
+                    nextBtn.classList.add('opacity-50');
+                }
+            }
+
+            // Add subtle visual feedback for selection count
+            if (sel.length > 0) {
+                serviceCardsEl.style.transform = 'scale(1.01)';
+                setTimeout(() => {
+                    serviceCardsEl.style.transform = 'scale(1)';
+                }, 200);
+            }
+        }
+
+        function updateConfirmation() {
+            // ดึงชื่อบริการที่เลือกและแปลให้ตรงกับภาษาปัจจุบัน
+            const selectedCards = [...$('serviceCards').children].filter(c => c.classList.contains('selected'));
+            const translatedServiceNames = selectedCards.map(c => translateServiceName(c.dataset.originalName || c.dataset.name, currentLang));
+            const raw = translatedServiceNames.join(', ') || '-';
+
+            const el = $('confirmService');
+            if (raw.includes(', ')) {
+                el.innerHTML = raw.split(', ').map((s) => `<div>${s}</div>`).join('');
+            } else {
+                el.textContent = raw;
+            }
+            $('confirmDate').textContent = selectedDate ? selectedDate.split('-').reverse().join('/') : '-';
+            $('confirmTime').textContent = $('time').value || '-';
+            $('confirmName').textContent = `${$('first_name').value || ''} ${$('last_name').value || ''}`.trim() || '-';
+            $('confirmPhone').textContent = $('phonenumber').value || '-';
+            $('confirmIdCardOrSocial').textContent = $('id_card_or_social').value || '-';
+            $('confirmDiseaseAllergy').textContent = $('disease_allergy').value || '-';
+            $('confirmNote').textContent = $('note').value.trim() || '-';
+        }
+
+        function statusKey(status) {
+            if (!status) return 'all';
+            const normalized = status.toLowerCase();
+            if (['รอการยืนยัน', 'pending'].includes(status) || normalized.includes('pending')) return 'pending';
+            if (['ยืนยันแล้ว', 'confirmed'].includes(status) || normalized.includes('confirmed')) return 'confirmed';
+            if (['ยกเลิก', 'cancelled'].includes(status) || normalized.includes('cancel')) return 'cancelled';
+            if (['เสร็จสิ้น', 'completed'].includes(status) || normalized.includes('complete')) return 'completed';
+            return 'all';
+        }
+
+        function setHistoryUserId(id) {
+            const field = $('useridlineFilter');
+            if (field) field.value = id || '';
+            if (historyFirstLoadPending && $('historySection') && !$('historySection').classList.contains('hidden')) {
+                loadHistoryData(true);
+            }
+        }
+
+        function setHistoryTableMessage(key, isError = false) {
+            const tbody = $('dataBody');
+            if (!tbody) return;
+            const message = t(key);
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 ${isError ? 'text-error' : 'text-placeholder'}">${message}</td></tr>`;
+        }
+
+        function showCustomAlert(msg, cb, opts = {}) {
+            const overlay = $('customAlertOverlay');
+            const container = overlay?.querySelector('.bg-white');
+            const msgEl = $('customAlertMessage');
+            if (!overlay || !container || !msgEl) return;
+            msgEl.textContent = msg;
+            const existingArea = container.querySelector('.alert-btn-area');
+            if (existingArea) existingArea.remove();
+
+            const area = document.createElement('div');
+            area.className = 'alert-btn-area flex justify-center gap-2 mt-4';
+
+            const confirmText = opts.confirmText || t('history.confirm');
+            const cancelText = opts.cancelText || t('history.cancel');
+            const showCancel = opts.showCancel;
+
+            const okBtn = document.createElement('button');
+            okBtn.textContent = confirmText;
+            okBtn.className = 'btn btn-primary w-full sm:w-auto px-6';
+            okBtn.onclick = () => {
+                hideCustomAlert();
+                if (cb) cb(true);
+            };
+            area.appendChild(okBtn);
+
+            if (showCancel) {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = cancelText;
+                cancelBtn.className = 'btn btn-secondary w-full sm:w-auto px-6';
+                cancelBtn.onclick = () => {
+                    hideCustomAlert();
+                    if (cb) cb(false);
+                };
+                area.appendChild(cancelBtn);
+            }
+
+            container.appendChild(area);
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+        }
+
+        function hideCustomAlert() {
+            const overlay = $('customAlertOverlay');
+            if (!overlay) return;
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+        }
+
+        function switchView(target) {
+            const bookingSection = $('bookingSection');
+            const historySection = $('historySection');
+            const bookingTab = $('bookingTab');
+            const historyTab = $('historyTab');
+            if (!bookingSection || !historySection || !bookingTab || !historyTab) return;
+
+            if (target === 'history') {
+                bookingSection.classList.add('hidden');
+                historySection.classList.remove('hidden');
+                historyTab.classList.add('active');
+                bookingTab.classList.remove('active');
+                if (historyFirstLoadPending) {
+                    loadHistoryData();
+                } else {
+                    applyHistoryFilters();
+                }
+            } else {
+                historySection.classList.add('hidden');
+                bookingSection.classList.remove('hidden');
+                bookingTab.classList.add('active');
+                historyTab.classList.remove('active');
+            }
+        }
+
+        async function loadHistoryData(forceRefresh = false) {
+            if (historyState.loading) return;
+            const userId = $('useridlineFilter')?.value;
+            if (!userId) {
+                historyFirstLoadPending = true;
+                setHistoryTableMessage('history.loading');
+                return;
+            }
+            if (historyState.loaded && !forceRefresh && !historyFirstLoadPending) {
+                applyHistoryFilters();
+                return;
+            }
+            historyState.loading = true;
+            setHistoryTableMessage('history.loading');
+            try {
+                const branch = localStorage.getItem('selectedBranch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=fetchBookings&branch=${branch}`);
+                if (!res.ok) throw new Error('NETWORK_ERROR');
+                const allData = await res.json();
+                historyState.records = Array.isArray(allData) ? allData
+                    .filter(d => d.userlineid === userId)
+                    .map(d => ({
+                        ...d,
+                        parsedDate: d?.date ? new Date(d.date.split('-').reverse().join('-')) : new Date(NaN)
+                    })) : [];
+                historyState.loaded = true;
+                historyFirstLoadPending = false;
+                applyHistoryFilters();
+            } catch (err) {
+                console.error('History load error:', err);
+                historyState.records = [];
+                historyState.filtered = [];
+                historyState.loaded = false;
+                historyFirstLoadPending = true;
+                setHistoryTableMessage('history.error', true);
+            } finally {
+                historyState.loading = false;
+            }
+        }
+
+        function applyHistoryFilters() {
+            const sortOrder = $('dateSort')?.value || 'latest';
+            const statusFilterValue = $('statusFilter')?.value || '';
+            const statusFilterKey = statusKey(statusFilterValue);
+            const data = [...historyState.records];
+
+            data.sort((a, b) => {
+                const aDate = a.parsedDate instanceof Date && !isNaN(a.parsedDate) ? a.parsedDate : new Date(0);
+                const bDate = b.parsedDate instanceof Date && !isNaN(b.parsedDate) ? b.parsedDate : new Date(0);
+                return sortOrder === 'latest' ? bDate - aDate : aDate - bDate;
+            });
+
+            historyState.filtered = data.filter(item => {
+                if (!statusFilterValue || statusFilterKey === 'all') return true;
+                return statusKey(item.status) === statusFilterKey;
+            });
+            historyState.page = 1;
+            renderHistoryPage(historyState.page);
+        }
+
+        function renderHistoryPage(page) {
+            const tbody = $('dataBody');
+            if (!tbody) return;
+            historyState.page = page;
+            tbody.innerHTML = '';
+
+            if (!historyState.filtered.length) {
+                setHistoryTableMessage('history.nodata');
+                renderHistoryPagination();
+                return;
+            }
+
+            const start = (page - 1) * historyState.itemsPerPage;
+            const end = start + historyState.itemsPerPage;
+            const pageData = historyState.filtered.slice(start, end);
+
+            pageData.forEach(item => {
+                const fullName = `${item.firstName || ''} ${item.lastName || ''}`.trim() || '-';
+                const statusNormalized = statusKey(item.status);
+                const confirmDisabled = statusNormalized !== 'pending';
+                const cancelDisabled = ['cancelled', 'completed'].includes(statusNormalized);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="p-2 border-b">${fullName}</td>
+                    <td class="p-2 border-b">${item.date || '-'}</td>
+                    <td class="p-2 border-b text-center">${t('history.status.' + statusNormalized)}</td>
+                    <td class="p-2 border-b text-center">
+                        <button type="button" class="toggleDetail history-toggle px-3 py-1 rounded text-xs font-semibold" data-tkey="history.view">${t('history.view')}</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+
+                const detailRow = document.createElement('tr');
+                detailRow.classList.add('hidden');
+                detailRow.innerHTML = `
+                    <td colspan="4" class="bg-[#f3fffb] p-4 text-sm">
+                        <div class="grid grid-cols-1 gap-1">
+                            <p><strong>${t('history.detail.name')}</strong> ${fullName}</p>
+                            <p><strong>${t('history.detail.phone')}</strong> ${item.phonenumber || '-'}</p>
+                            <p><strong>${t('history.detail.id')}</strong> ${item.idCardOrSocial || '-'}</p>
+                            <p><strong>${t('history.detail.disease')}</strong> ${item.diseaseAllergy || '-'}</p>
+                            <p><strong>${t('history.detail.service')}</strong> ${item.service || '-'}</p>
+                            <p><strong>${t('history.detail.date')}</strong> ${item.date || '-'}</p>
+                            <p><strong>${t('history.detail.time')}</strong> ${item.time || '-'}</p>
+                            <p><strong>${t('history.detail.note')}</strong> ${item.note || '-'}</p>
+                            <p><strong>${t('history.detail.status')}</strong> ${t('history.status.' + statusNormalized)}</p>
+                            <div class="mt-3 flex gap-2 flex-wrap">
+                                <button type="button" class="confirmBtn history-confirm px-4 py-1 rounded text-xs font-semibold" ${confirmDisabled ? 'disabled' : ''} data-id="${item.idKey}">${t('history.confirm')}</button>
+                                <button type="button" class="cancelBtn history-cancel px-4 py-1 rounded text-xs font-semibold text-white" ${cancelDisabled ? 'disabled' : ''} data-id="${item.idKey}">${t('history.cancel')}</button>
+                            </div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(detailRow);
+
+                const toggleBtn = row.querySelector('.toggleDetail');
+                toggleBtn.onclick = () => {
+                    detailRow.classList.toggle('hidden');
+                };
+            });
+
+            tbody.querySelectorAll('.confirmBtn').forEach(btn => {
+                btn.onclick = () => {
+                    if (btn.disabled) return;
+                    confirmHistoryAction('history.confirmQ', 'confirmBooking', btn.dataset.id);
+                };
+            });
+            tbody.querySelectorAll('.cancelBtn').forEach(btn => {
+                btn.onclick = () => {
+                    if (btn.disabled) return;
+                    confirmHistoryAction('history.cancelQ', 'cancelBooking', btn.dataset.id);
+                };
+            });
+
+            renderHistoryPagination();
+        }
+
+        function renderHistoryPagination() {
+            const pagination = $('pagination');
+            if (!pagination) return;
+            pagination.innerHTML = '';
+            const totalPages = Math.ceil(historyState.filtered.length / historyState.itemsPerPage);
+            if (totalPages <= 1) return;
+
+            const createBtn = (label, page) => {
+                const btn = document.createElement('button');
+                btn.textContent = label;
+                btn.dataset.page = page;
+                btn.className = `pagination-btn${historyState.page === page ? ' is-active' : ''}`;
+                btn.onclick = () => {
+                    historyState.page = Number(btn.dataset.page);
+                    renderHistoryPage(historyState.page);
+                };
+                pagination.appendChild(btn);
+            };
+
+            createBtn('«', 1);
+            for (let i = 1; i <= totalPages; i++) {
+                createBtn(String(i), i);
+            }
+            createBtn('»', totalPages);
+        }
+
+        function confirmHistoryAction(messageKey, action, id) {
+            showCustomAlert(t(messageKey), async (confirmed) => {
+                if (!confirmed) return;
+                showLoading(true);
+                try {
+                    await fetch(`${WEB_APP_URL}?action=${action}&id=${encodeURIComponent(id)}`, {
+                        method: 'POST'
+                    });
+                    showCustomAlert(t('history.success'), null, { confirmText: t('popup.close') });
+                    await loadHistoryData(true);
+                } catch (err) {
+                    console.error('History action error:', err);
+                    showCustomAlert(t('history.error'), null, { confirmText: t('popup.close') });
+                } finally {
+                    showLoading(false);
+                }
+            }, { showCancel: true, confirmText: t('history.confirm'), cancelText: t('history.cancel') });
+        }
+
+        $('nextToStep2').onclick = () => {
+            if (!JSON.parse($('selectedServices').value || '[]').length) return showPopup('popup.serviceNeeded');
+            navigateToStep('step2');
+        };
+        $('backToStep1').onclick = () => navigateToStep('step1');
+        $('nextToStep3').onclick = () => {
+            if (!selectedDate) return showPopup('popup.dateNeeded');
+            if (!$('time').value) return showPopup('popup.timeNeeded');
+            navigateToStep('step3');
+        };
+        $('backToStep2').onclick = () => navigateToStep('step2');
+        $('nextToStep4').onclick = () => {
+            if (!$('first_name').value.trim()) return showPopup('popup.firstNameNeeded');
+            if (!$('last_name').value.trim()) return showPopup('popup.lastNameNeeded');
+            if (!$('phonenumber').value.trim()) return showPopup('popup.phoneNeeded');
+            if (!/^[0-9]{9,10}$/.test($('phonenumber').value.trim())) return showPopup('popup.phoneFormatError');
+            if (!$('id_card_or_social').value.trim()) return showPopup('popup.idCardOrSocialNeeded');
+            updateConfirmation();
+            navigateToStep('step4');
+        };
+        $('backToStep3').onclick = () => navigateToStep('step3');
+
+        const bookingTabEl = $('bookingTab');
+        if (bookingTabEl) bookingTabEl.onclick = () => switchView('booking');
+        const historyTabEl = $('historyTab');
+        if (historyTabEl) historyTabEl.onclick = () => switchView('history');
+
+        ['statusFilter', 'dateSort'].forEach(id => {
+            const el = $(id);
+            if (el) {
+                el.addEventListener('change', () => {
+                    if (!historyState.loaded) return;
+                    applyHistoryFilters();
+                });
+            }
+        });
+
+        $('bookingForm').onsubmit = async (e) => {
+            e.preventDefault();
+            showLoading(true);
+            const fd = new FormData($('bookingForm'));
+            fd.append('date', selectedDate);
+            fd.append('first_name', $('first_name').value.trim());
+            fd.append('last_name', $('last_name').value.trim());
+            fd.append('id_card_or_social', $('id_card_or_social').value.trim());
+            fd.append('disease_allergy', $('disease_allergy').value.trim() || '');
+            fd.append('branch', localStorage.getItem('selectedBranch') || '1');
+            try {
+                const resp = await fetch(WEB_APP_URL, { method: 'POST', body: fd });
+                const text = await resp.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch {
+                    result = { success: resp.ok, message: text };
+                }
+                if (!result.success) throw new Error(result.message || t('popup.submitError'));
+            } catch (err) {
+                console.error('Submit error:', err);
+                return showPopup(err.message || t('popup.submitError'), false, true);
+            }
+            showLoading(false);
+            showPopup('popup.bookingSuccess', true);
+            await sendFlexMessage();
+            $('bookingForm').reset();
+            updateSelectedServices();
+            $('timeDropdown').innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${t('step2.placeholder')}</div>`;
+            $('time').value = '';
+            selectedDate = '';
+            if (flatpickrInstance) flatpickrInstance.clear();
+            navigateToStep('step1');
+        };
+
+        async function sendFlexMessage() {
+            if (!window.liff || typeof liff.isInClient !== 'function') {
+                console.warn('LIFF SDK not loaded or not initialized');
+                alert('Flex message: LIFF SDK not loaded.');
+                return;
+            }
+            if (!liff.isInClient()) {
+                console.warn('Not in LINE client, cannot send flex message');
+                alert('Flex message can only be sent inside LINE app.');
+                return;
+            }
+            const servicesRaw = $('selectedServiceNames').value || '';
+            const servicesList = servicesRaw.split(', ').filter(s => s.trim().length);
+
+            // Service list: left-aligned (unchanged)
+            const serviceContents = servicesList.map(s => ({
+                type: 'box',
+                layout: 'horizontal',
+                spacing: 'md',
+                contents: [
+                    { type: 'text', text: '•', size: 'sm', color: varToHex('--text-main2'), flex: 1, align: 'start' },
+                    { type: 'text', text: s, size: 'sm', wrap: true, color: varToHex('--text-main2'), flex: 9, align: 'start' }
+                ]
+            }));
+            if (!serviceContents.length) {
+                serviceContents.push({ type: 'text', text: '-', size: 'sm', color: varToHex('--text-main2'), align: 'start' });
+            }
+
+            // All other fields: value right-aligned
+            function makeFieldBox(label, value) {
+                return {
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                        {
+                            type: 'text',
+                            text: label + ':',
+                            color: varToHex('--text-placeholder'),
+                            size: 'sm',
+                            flex: 3,
+                            align: 'start'
+                        },
+                        {
+                            type: 'text',
+                            text: value,
+                            color: varToHex('--text-main'),
+                            size: 'sm',
+                            wrap: true,
+                            flex: 5,
+                            align: 'end'
+                        },
+                    ],
+                };
+            }
+
+            const bubble = {
+                type: 'bubble',
+                header: {
+                    type: 'box',
+                    layout: 'vertical',
+                    backgroundColor: varToHex('--primary'),
+                    contents: [
+                        {
+                            type: 'text',
+                            text: t('flex.header'),
+                            weight: 'bold',
+                            size: 'xs',
+                            align: 'center',
+                            color: '#ffffff'
+                        }
+                    ]
+                },
+                body: {
+                    type: 'box',
+                    layout: 'vertical',
+                    spacing: 'sm',
+                    paddingAll: 'xl',
+                    backgroundColor: varToHex('--bg-card'),
+                    contents: [
+                        { type: 'text', text: t('flex.serviceLabel') + ':', size: 'sm', color: varToHex('--text-main') },
+                        ...serviceContents,
+                        { type: 'separator', margin: 'md', color: varToHex('--text-main') },
+                        makeFieldBox(t('flex.dateLabel'), selectedDate ? selectedDate.split('-').reverse().join('/') : '-'),
+                        makeFieldBox(t('flex.timeLabel'), $('time').value || '-'),
+                        { type: 'separator', margin: 'md', color: varToHex('--text-main') },
+                        makeFieldBox(t('flex.nameLabel'), `${$('first_name').value || ''} ${$('last_name').value || ''}`.trim() || '-'),
+                        makeFieldBox(t('flex.phoneLabel'), $('phonenumber').value || '-'),
+                        makeFieldBox(t('flex.idCardOrSocialLabel'), $('id_card_or_social').value || '-'),
+                        makeFieldBox(t('flex.diseaseAllergyLabel'), $('disease_allergy').value || '-'),
+                        makeFieldBox(t('flex.noteLabel'), $('note').value || '-')
+                    ]
+                },
+                footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                        {
+                            type: 'text',
+                            text: 'ทำการจองให้เรียบร้อยค่ะ',
+                            wrap: true,
+                            size: 'sm',
+                            color: '#00B8B0',
+                            weight: 'bold',
+                            margin: 'md',
+                            align: 'center'
+                        },
+                        {
+                            type: 'text',
+                            text: 'เพื่อความรวดเร็ว \nกรุณากด ยืนยัน นัดหมาย \nก่อนวันนัด1 วันนะคะ \n\nท่านสามารถตรวจสอบประวัติการจอง และ กดยืนยันหรือยกเลิกนัดหมาย ได้ที่ เมนู “นัดหมาย/ยืนยัน” เลือก “ข้อมูลการนัดหมาย” และกด“ยืนยัน”ค่ะ  แล้วพบกันนะคะ',
+                            wrap: true,
+                            size: 'sm',
+                            color: '#555555',
+                            margin: 'md',
+                            align: 'center'
+                        }
+                    ]
+                },
+                styles: { header: { separator: false } }
+            };
+            try {
+                await liff.sendMessages([{ type: 'flex', altText: t('flex.altText'), contents: bubble }]);
+            } catch (e) {
+                console.error('Error sending flex message:', e);
+                alert('ส่ง Flex message ไม่สำเร็จ: ' + (e.message || e));
+            }
+        }
+
+        function varToHex(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Always show branch selector first, never auto-load
+            $('appContainer').style.display = 'none';
+            $('branchSection').style.display = 'block';
+            showLoading(false);
+
+            // Branch selection logic (button version)
+            const branchBtns = document.querySelectorAll('.branch-btn');
+            branchBtns.forEach(btn => {
+                btn.onclick = async () => {
+                    const branch = btn.dataset.branch;
+                    if (!branch) return;
+                    localStorage.setItem('selectedBranch', branch);
+                    $('branchSection').style.display = 'none';
+                    $('appContainer').style.display = 'flex';
+                    $('appContainer').style.opacity = '1';
+                    await loadBookingUI(branch);
+                };
+            });
+
+            async function loadBookingUI(branch) {
+                showLoading(true);
+                // Language setup
+                const savedLang = localStorage.getItem('booking_lang') || navigator.language.split('-')[0];
+                const lang = translations[savedLang] ? savedLang : defaultLang;
+                currentLang = lang; // Set current language directly
+                $('languageSwitcher').value = lang;
+                $('languageSwitcher').addEventListener('change', async (e) => {
+                    await setLanguage(e.target.value);
+                });
+                // Load all booking data (removed duplicate fetchServiceData from setLanguage)
+                await Promise.allSettled([
+                    ENABLE_LIFF ? initLiff() : Promise.resolve(offlineProfile()),
+                    loadFlatpickrLocale('th'),
+                    fetchHolidayDates(),
+                    fetchMonthAvailability(new Date().getFullYear(), new Date().getMonth() + 1),
+                    fetchServiceData() // Load services only once
+                ]);
+                // Apply language translations after data is loaded
+                document.querySelectorAll('[data-translate-key], [data-translate-key-placeholder], [data-tkey], [data-tkey-placeholder]').forEach(el => {
+                    if (el.hasAttribute('data-translate-key')) {
+                        el.textContent = t(el.dataset.translateKey);
+                    }
+                    if (el.hasAttribute('data-translate-key-placeholder')) {
+                        el.placeholder = t(el.dataset.translateKeyPlaceholder);
+                    }
+                    if (el.hasAttribute('data-tkey')) {
+                        el.textContent = t(el.dataset.tkey);
+                    }
+                    if (el.hasAttribute('data-tkey-placeholder')) {
+                        el.placeholder = t(el.dataset.tkeyPlaceholder);
+                    }
+                });
+                $('greetingPrefix').textContent = t(getGreeting(new Date().getHours()));
+
+                if (!flatpickrInstance) initCalendar();
+                // Ensure we're on step1
+                $(currentVisibleStep).classList.add('step-active');
+                $(currentVisibleStep).classList.remove('hidden');
+                // Show UI with transition
+                $('appContainer').style.opacity = 1;
+                showLoading(false);
+            }
+            // ไม่มีการโหลดอัตโนมัติอีกต่อไป - ผู้ใช้ต้องเลือกสาขาทุกครั้ง
+        });
+    </script>
+</body>
+
+</html>
