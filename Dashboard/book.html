@@ -585,7 +585,8 @@
 
         async function fetchMonthAvailability(year, month) {
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=getMonthAvailability&year=${year}&month=${('0' + month).slice(-2)}`);
+                const branch = localStorage.getItem('branch') || '1';
+                const res = await fetch(`${WEB_APP_URL}?action=getMonthAvailability&year=${year}&month=${('0' + month).slice(-2)}&branch=${branch}`);
                 if (!res.ok) throw new Error('Network error fetching month availability');
                 monthAvailability = await res.json();
             } catch (err) {
@@ -644,16 +645,20 @@
         async function fetchHolidayDates() {
             try {
                 const branch = localStorage.getItem('branch') || '1';
-                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&getHolidays=true&branch=${branch}`);
+                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&getWorkdays=true&branch=${branch}`);
                 if (!res.ok) throw new Error('Network error fetching holidays');
                 const j = await res.json();
                 // รับค่าทั้งวันหยุดพิเศษ และวันหยุดประจำสัปดาห์
-                window.holidayDates = Array.isArray(j.holidays) ? j.holidays : [];
-                window.permanentHolidayDays = Array.isArray(j.permanentHolidays) ? j.permanentHolidays : [];
+                window.specialWorkdays = Array.isArray(j.workdays)
+                    ? j.workdays
+                    : (Array.isArray(j.holidays) ? j.holidays : []);
+                window.weeklyWorkdays = Array.isArray(j.weeklyWorkdays)
+                    ? j.weeklyWorkdays
+                    : (Array.isArray(j.permanentHolidays) ? j.permanentHolidays : []);
             } catch (err) {
                 console.error("fetchHolidayDates error:", err);
-                window.holidayDates = [];
-                window.permanentHolidayDays = [];
+                window.specialWorkdays = [];
+                window.weeklyWorkdays = [];
             }
         }
 
@@ -680,9 +685,10 @@
                     (d) => {
                         const k = formatDateForFlatpickr(d);
                         // เพิ่มเงื่อนไข: ตรวจสอบว่าวันในสัปดาห์ (0=อาทิตย์, 6=เสาร์) ตรงกับวันหยุดประจำสัปดาห์หรือไม่
-                        const isPermanentHoliday = (window.permanentHolidayDays || []).includes(d.getDay());
+                        const isWorkingDay = (window.weeklyWorkdays || []).includes(d.getDay())
+                            || (window.specialWorkdays || []).includes(k);
 
-                        return isPermanentHoliday || (window.holidayDates || []).includes(k) || monthAvailability[k] === 'full';
+                        return !isWorkingDay || monthAvailability[k] === 'full';
                     },
                 ],
                 onDayCreate: (dObj, dStr, fp, dayElem) => {
@@ -690,10 +696,10 @@
                     const date = dayElem.dateObj;
 
                     // ตรวจสอบวันหยุดทั้ง 2 ประเภท
-                    const isSpecialHoliday = (window.holidayDates || []).includes(k);
-                    const isPermanentHoliday = (window.permanentHolidayDays || []).includes(date.getDay());
+                    const isWorkingDay = (window.weeklyWorkdays || []).includes(date.getDay())
+                        || (window.specialWorkdays || []).includes(k);
 
-                    if (isSpecialHoliday || isPermanentHoliday) {
+                    if (!isWorkingDay) {
                         dayElem.innerHTML += `<span class="day-holiday-indicator font-thai">หยุด</span>`;
                     }
                 },
