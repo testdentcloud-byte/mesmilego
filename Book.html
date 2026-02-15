@@ -78,7 +78,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--overlay-bg);
+            background: rgba(255, 255, 255, 0.28);
             display: none;
             align-items: center;
             justify-content: center;
@@ -86,6 +86,9 @@
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
             pointer-events: none;
+            backdrop-filter: blur(1.5px);
+            padding-top: 24px;
+            align-items: flex-start;
         }
 
         .loading-overlay.visible {
@@ -94,55 +97,110 @@
             pointer-events: auto;
         }
 
-        /* ---- Loading Animation ---- */
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 184, 176, 0.15);
-            border-bottom-color: var(--primary);
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
+        .loading-indicator {
+            width: min(86vw, 320px);
+            background: rgba(255, 255, 255, 0.97);
+            border: 1px solid var(--border);
+            border-radius: 0.85rem;
+            padding: 0.75rem;
+            box-shadow: 0 8px 22px rgba(2, 74, 78, 0.12);
         }
 
-        .service-loader {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-bottom-color: var(--accent);
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-            margin-right: 12px;
-        }
-
-        .loading-text {
+        .loading-indicator-title {
+            font-size: 0.78rem;
             color: var(--text-placeholder);
-            font-size: 0.9rem;
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            font-weight: 600;
         }
 
-        @keyframes pulse {
+        .loading-indicator-track {
+            position: relative;
+            height: 6px;
+            width: 100%;
+            border-radius: 999px;
+            background: #e8f3f1;
+            overflow: hidden;
+        }
 
-            0%,
+        .loading-indicator-track::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            width: 40%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            animation: loading-indeterminate 1.1s ease-in-out infinite;
+        }
+
+        .skeleton-shape {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.55rem;
+            background: linear-gradient(90deg, #edf2f3 0%, #e4ebed 100%);
+        }
+
+        .skeleton-shape::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+            animation: skeletonShimmer 1.25s ease-in-out infinite;
+        }
+
+        .service-skeleton-card {
+            min-height: 110px;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            padding: 0.7rem;
+            box-shadow: 0 3px 10px rgba(2, 74, 78, 0.06);
+        }
+
+        .service-sk-line-lg {
+            height: 0.9rem;
+            width: 75%;
+            margin-bottom: 0.6rem;
+        }
+
+        .service-sk-line-sm {
+            height: 0.75rem;
+            width: 52%;
+        }
+
+        .time-skeleton-card {
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: #ffffff;
+            padding: 0.75rem;
+            box-shadow: 0 3px 10px rgba(2, 74, 78, 0.06);
+        }
+
+        .time-sk-line-top {
+            height: 0.75rem;
+            width: 60%;
+            margin-bottom: 0.5rem;
+        }
+
+        .time-sk-line-bottom {
+            height: 0.65rem;
+            width: 46%;
+        }
+
+        @keyframes skeletonShimmer {
             100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
+                transform: translateX(100%);
             }
         }
 
-        @keyframes rotation {
+        @keyframes loading-indeterminate {
             0% {
-                transform: rotate(0deg);
+                transform: translateX(-115%);
             }
 
             100% {
-                transform: rotate(360deg);
+                transform: translateX(260%);
             }
         }
 
@@ -608,7 +666,10 @@
 
 <body class="bg-gradient-to-b from-[#e0fff7] via-[#f8ffe9] to-white min-h-screen relative bg-fixed ">
     <div class="loading-overlay" id="loadingOverlay">
-        <div class="loader"></div>
+        <div class="loading-indicator">
+            <div class="loading-indicator-title">กำลังโหลดข้อมูล...</div>
+            <div class="loading-indicator-track"></div>
+        </div>
     </div>
     <div class="popup" id="popup">
         <div class="popup-content" id="popupContent"></div>
@@ -746,7 +807,8 @@
                 <input type="hidden" id="time" name="time" /><input type="hidden" id="selectedServices"
                     name="selectedServices" /><input type="hidden" id="selectedServiceNames"
                     name="selectedServiceNames" /><input type="hidden" id="userlineid" name="userlineid" value /><input
-                    type="hidden" name="action" value="makeBooking" />
+                    type="hidden" id="lang" name="lang" value="th" /><input type="hidden" name="action"
+                    value="makeBooking" />
             </form>
         </section>
 
@@ -804,7 +866,7 @@
     <script src="Config.js"></script>
 
     <script>
-        const ENABLE_LIFF = true; // เปลี่ยนเป็น true เพื่อเปิดใช้งาน LIFF
+        const ENABLE_LIFF = false; // เปลี่ยนเป็น true เพื่อเปิดใช้งาน LIFF
         const $ = (id) => document.getElementById(id);
 
         const defaultLang = 'th';
@@ -833,6 +895,17 @@
             }
             return key;
         };
+
+        function syncLangField(lang = currentLang) {
+            const resolvedLang = translations[lang] ? lang : defaultLang;
+            const langInput = $('lang');
+            if (langInput) langInput.value = resolvedLang;
+            const langSwitcher = $('languageSwitcher');
+            if (langSwitcher && langSwitcher.value !== resolvedLang) {
+                langSwitcher.value = resolvedLang;
+            }
+            return resolvedLang;
+        }
 
         // ฟังก์ชันแปลชื่อบริการ (เข้มแข็ง: trim/normalize และลองหลาย fallback)
         function normalizeServiceKey(name) {
@@ -913,6 +986,7 @@
             console.log('currentLang set to:', currentLang);
             localStorage.setItem('booking_lang', currentLang);
             document.documentElement.lang = currentLang;
+            syncLangField(currentLang);
 
             // สร้างฟังก์ชัน t แบบ local สำหรับภาษาใหม่
             const tLocal = (key) => {
@@ -999,24 +1073,35 @@
             }
         }
 
-        // inline service-loading UI (spinner inside serviceCards) and control disabling
+        function getServiceSkeletonHTML(count = 4) {
+            return Array.from({ length: count }).map(() => `
+                <div class="service-skeleton-card">
+                    <div class="skeleton-shape service-sk-line-lg"></div>
+                    <div class="skeleton-shape service-sk-line-sm"></div>
+                </div>
+            `).join('');
+        }
+
+        function getTimeSkeletonHTML(count = 6) {
+            return Array.from({ length: count }).map(() => `
+                <div class="time-skeleton-card">
+                    <div class="skeleton-shape time-sk-line-top"></div>
+                    <div class="skeleton-shape time-sk-line-bottom"></div>
+                </div>
+            `).join('');
+        }
+
+        // inline service-loading UI (skeleton in serviceCards) and control disabling
         function setServiceLoading(on) {
             const container = $('serviceCards');
             const nextBtn = $('nextToStep2');
             const langSwitch = $('languageSwitcher');
             if (!container) return;
             if (on) {
-                // show enhanced loading state with spinner and text
-                container.innerHTML = `
-                    <div class="col-span-2 flex flex-col items-center justify-center py-8">
-                        <div class="flex items-center mb-3">
-                            <div class="service-loader"></div>
-                        </div>
-                    </div>
-                `;
+                container.innerHTML = getServiceSkeletonHTML(4);
                 if (nextBtn) {
                     nextBtn.disabled = true;
-                    nextBtn.classList.add('btn-loading');
+                    nextBtn.classList.add('opacity-70');
                 }
                 if (langSwitch) {
                     langSwitch.disabled = true;
@@ -1025,7 +1110,7 @@
             } else {
                 if (nextBtn) {
                     nextBtn.disabled = false;
-                    nextBtn.classList.remove('btn-loading');
+                    nextBtn.classList.remove('opacity-70');
                 }
                 if (langSwitch) {
                     langSwitch.disabled = false;
@@ -1041,23 +1126,23 @@
                 `<svg class="w-12 h-12 text-base mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>` :
                 `<svg class="w-12 h-12 text-error mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
 
-                        $('popupContent').innerHTML = `
+            $('popupContent').innerHTML = `
                     <div class="py-4 text-center">${icon}<p>${msg}</p></div>
                     <div class="mt-4 text-center">
                         <button id="popupCloseBtn" class="btn btn-secondary w-full sm:w-auto px-6">${t('popup.close')}</button>
                     </div>`;
-                        // Add LIFF close logic for booking success
-                        setTimeout(() => {
-                                const btn = document.getElementById('popupCloseBtn');
-                                if (btn) {
-                                        btn.onclick = function() {
-                                                hidePopup();
-                                                if (msgKey === 'popup.bookingSuccess' && window.liff && typeof liff.closeWindow === 'function') {
-                                                        liff.closeWindow();
-                                                }
-                                        };
-                                }
-                        }, 0);
+            // Add LIFF close logic for booking success
+            setTimeout(() => {
+                const btn = document.getElementById('popupCloseBtn');
+                if (btn) {
+                    btn.onclick = function () {
+                        hidePopup();
+                        if (msgKey === 'popup.bookingSuccess' && window.liff && typeof liff.closeWindow === 'function') {
+                            liff.closeWindow();
+                        }
+                    };
+                }
+            }, 0);
             const popupEl = $('popup');
             popupEl.style.display = 'flex';
             setTimeout(() => popupEl.classList.add('visible'), 10);
@@ -1123,7 +1208,7 @@
         async function fetchMonthAvailability(year, month) {
             const branch = localStorage.getItem('selectedBranch') || '1';
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=getMonthAvailability&year=${year}&month=${('0' + month).slice(-2)}&branch=${branch}`);
+                const res = await fetch(`${WEB_APP_URL}?action=getMonthAvailability&year=${year}&month=${('0' + month).slice(-2)}&branch=${branch}&_=${Date.now()}`);
                 if (!res.ok) throw new Error();
                 monthAvailability = await res.json();
             } catch {
@@ -1279,10 +1364,10 @@
         }
 
         async function checkAvailability(dateStr) {
-            $('timeDropdown').innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${t('step2.loading')}</div>`;
+            $('timeDropdown').innerHTML = getTimeSkeletonHTML(6);
             try {
                 const branch = localStorage.getItem('selectedBranch') || '1';
-                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&date=${dateStr}&branch=${branch}`);
+                const res = await fetch(`${WEB_APP_URL}?action=checkAvailability&date=${dateStr}&branch=${branch}&_=${Date.now()}`);
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
@@ -1685,16 +1770,25 @@
             }
         });
 
+        // Language Switcher Logic
+        const langSwitcher = $('languageSwitcher');
+        if (langSwitcher) {
+            syncLangField(langSwitcher.value || currentLang);
+        }
+
         $('bookingForm').onsubmit = async (e) => {
             e.preventDefault();
             showLoading(true);
+            syncLangField(currentLang);
             const fd = new FormData($('bookingForm'));
+            fd.set('action', 'makeBooking');
             fd.append('date', selectedDate);
             fd.append('first_name', $('first_name').value.trim());
             fd.append('last_name', $('last_name').value.trim());
             fd.append('id_card_or_social', $('id_card_or_social').value.trim());
             fd.append('disease_allergy', $('disease_allergy').value.trim() || '');
             fd.append('branch', localStorage.getItem('selectedBranch') || '1');
+            fd.set('lang', currentLang || defaultLang);
             try {
                 const resp = await fetch(WEB_APP_URL, { method: 'POST', body: fd });
                 const text = await resp.text();
@@ -1702,17 +1796,30 @@
                 try {
                     result = JSON.parse(text);
                 } catch {
-                    result = { success: resp.ok, message: text };
+                    throw new Error((text || '').trim() || t('popup.submitError'));
                 }
-                if (!result.success) throw new Error(result.message || t('popup.submitError'));
+                if (!resp.ok || result?.success !== true) {
+                    throw new Error(result?.message || t('popup.submitError'));
+                }
             } catch (err) {
                 console.error('Submit error:', err);
                 return showPopup(err.message || t('popup.submitError'), false, true);
             }
             showLoading(false);
+
+            // Try to send Flex Message, but don't block success if it fails
+            if (typeof ENABLE_LIFF !== 'undefined' && ENABLE_LIFF) {
+                try {
+                    await sendFlexMessage();
+                } catch (flexError) {
+                    console.warn('Failed to send Flex Message:', flexError);
+                    // Optional: alert('Booking saved, but failed to send LINE message.');
+                }
+            }
+
             showPopup('popup.bookingSuccess', true);
-            await sendFlexMessage();
             $('bookingForm').reset();
+            syncLangField(currentLang);
             updateSelectedServices();
             $('timeDropdown').innerHTML = `<div class="text-placeholder text-sm text-center py-2 col-span-full">${t('step2.placeholder')}</div>`;
             $('time').value = '';
@@ -1819,7 +1926,7 @@
                     contents: [
                         {
                             type: 'text',
-                            text: 'ทำการจองให้เรียบร้อยค่ะ',
+                            text: t('flex.footerTitle'),
                             wrap: true,
                             size: 'sm',
                             color: '#00B8B0',
@@ -1829,7 +1936,7 @@
                         },
                         {
                             type: 'text',
-                            text: 'เพื่อความรวดเร็ว \nกรุณากด ยืนยัน นัดหมาย \nก่อนวันนัด1 วันนะคะ \n\nท่านสามารถตรวจสอบประวัติการจอง และ กดยืนยันหรือยกเลิกนัดหมาย ได้ที่ เมนู “นัดหมาย/ยืนยัน” เลือก “ข้อมูลการนัดหมาย” และกด“ยืนยัน”ค่ะ  แล้วพบกันนะคะ',
+                            text: t('flex.footerBody'),
                             wrap: true,
                             size: 'sm',
                             color: '#555555',
@@ -1878,10 +1985,14 @@
                 const savedLang = localStorage.getItem('booking_lang') || navigator.language.split('-')[0];
                 const lang = translations[savedLang] ? savedLang : defaultLang;
                 currentLang = lang; // Set current language directly
-                $('languageSwitcher').value = lang;
-                $('languageSwitcher').addEventListener('change', async (e) => {
-                    await setLanguage(e.target.value);
-                });
+                const languageSwitcher = $('languageSwitcher');
+                syncLangField(currentLang);
+                if (languageSwitcher && !languageSwitcher.dataset.boundLangChange) {
+                    languageSwitcher.addEventListener('change', async (e) => {
+                        await setLanguage(e.target.value);
+                    });
+                    languageSwitcher.dataset.boundLangChange = 'true';
+                }
                 // Load all booking data (removed duplicate fetchServiceData from setLanguage)
                 await Promise.allSettled([
                     ENABLE_LIFF ? initLiff() : Promise.resolve(offlineProfile()),

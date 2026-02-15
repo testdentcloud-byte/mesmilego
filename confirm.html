@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,18 +9,31 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Noto Sans Thai', sans-serif; }
+        body {
+            font-family: 'Noto Sans Thai', sans-serif;
+        }
+
         .spinner {
-            width: 3rem; height: 3rem;
+            width: 3rem;
+            height: 3rem;
             border: .5rem solid #e5e7eb;
             border-top-color: #4f46e5;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .hidden { display: none !important; }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
+
 <body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
 
     <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -31,7 +45,8 @@
 
     <div id="mainCard" class="bg-white w-full max-w-md rounded-xl shadow-lg p-6 space-y-4 hidden relative">
         <div class="absolute right-0 top-0 mt-2 mr-2 z-10">
-            <select id="langSwitcher" class="bg-slate-100 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none">
+            <select id="langSwitcher"
+                class="bg-slate-100 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none">
                 <option value="th">ไทย</option>
                 <option value="en">English</option>
                 <option value="my">မြန်မာ</option>
@@ -42,103 +57,128 @@
         <div class="border-t border-slate-200"></div>
 
         <div id="detailsContainer" class="space-y-2 text-sm">
-            <div class="flex justify-between"><span class="text-slate-500" data-tkey="label.name">ชื่อผู้จอง:</span><strong id="detail-name" class="text-slate-700 text-right"></strong></div>
-            <div class="flex justify-between"><span class="text-slate-500" data-tkey="label.service">บริการ:</span><strong id="detail-service" class="text-slate-700 text-right"></strong></div>
-            <div class="flex justify-between"><span class="text-slate-500" data-tkey="label.date">วันที่:</span><strong id="detail-date" class="text-slate-700 text-right"></strong></div>
-            <div class="flex justify-between"><span class="text-slate-500" data-tkey="label.time">เวลา:</span><strong id="detail-time" class="text-slate-700 text-right"></strong></div>
+            <div class="flex justify-between"><span class="text-slate-500"
+                    data-tkey="label.name">ชื่อผู้จอง:</span><strong id="detail-name"
+                    class="text-slate-700 text-right"></strong></div>
+            <div class="flex justify-between"><span class="text-slate-500"
+                    data-tkey="label.service">บริการ:</span><strong id="detail-service"
+                    class="text-slate-700 text-right"></strong></div>
+            <div class="flex justify-between"><span class="text-slate-500" data-tkey="label.date">วันที่:</span><strong
+                    id="detail-date" class="text-slate-700 text-right"></strong></div>
+            <div class="flex justify-between"><span class="text-slate-500" data-tkey="label.time">เวลา:</span><strong
+                    id="detail-time" class="text-slate-700 text-right"></strong></div>
         </div>
 
         <div id="buttonsContainer" class="pt-2">
-             <div class="border-t border-slate-200 mb-4"></div>
+            <div class="border-t border-slate-200 mb-4"></div>
             <div class="flex gap-3">
-                <button id="cancelBtn" class="flex-1 bg-red-100 text-red-700 hover:bg-red-200 font-bold py-3 px-4 rounded-lg transition" data-tkey="btn.cancel">ยกเลิก</button>
-                <button id="confirmBtn" class="flex-[2] bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-3 px-4 rounded-lg transition" data-tkey="btn.confirm">ยืนยันนัดหมาย</button>
+                <button id="cancelBtn"
+                    class="w-full bg-red-100 text-red-700 hover:bg-red-200 font-bold py-3 px-4 rounded-lg transition"
+                    data-tkey="btn.cancel">ยกเลิกนัดหมาย</button>
             </div>
         </div>
-        
+
         <div id="resultContainer" class="hidden text-center py-8">
             <p id="resultText" class="text-lg font-semibold text-slate-700 mb-4"></p>
-            <button id="closeBtn" onclick="liff.closeWindow()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-6 rounded-lg" data-tkey="btn.close">ปิด</button>
+            <button id="closeBtn" onclick="liff.closeWindow()"
+                class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-6 rounded-lg"
+                data-tkey="btn.close">ปิด</button>
+        </div>
+
+        <!-- Custom Confirmation Modal -->
+        <div id="confirmModal"
+            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div
+                class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center transform transition-all scale-100">
+                <h3 id="modalTitle" class="text-lg font-bold text-gray-900 mb-2" data-tkey="modal.title">
+                    ยืนยันการยกเลิก?</h3>
+                <p id="modalDesc" class="text-gray-500 mb-6" data-tkey="modal.desc">
+                    คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการนัดหมายนี้?</p>
+                <div class="flex gap-3 justify-center">
+                    <button id="modalCancel"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded"
+                        data-tkey="btn.back">ไม่, กลับไป</button>
+                    <button id="modalConfirm"
+                        class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
+                        data-tkey="btn.confirmCancel">ใช่, ยกเลิกเลย</button>
+                </div>
+            </div>
         </div>
     </div>
     <script src="Config.js"></script>
 
     <script>
- // Translation dictionary
- const translations = {
-     th: {
-         title: 'จัดการนัดหมาย',
-         success: 'สำเร็จ!',
-         error: 'เกิดข้อผิดพลาด',
-         loading: 'กำลังดำเนินการ...',
-         resultSuccess: 'ดำเนินการเรียบร้อยแล้ว',
-         resultConfirm: 'ยืนยันการนัดหมายสำเร็จแล้ว',
-         resultCancel: 'ยกเลิกการนัดหมายสำเร็จแล้ว',
-         btn: { confirm: 'ยืนยันนัดหมาย', cancel: 'ยกเลิก', close: 'ปิด' },
-         label: { name: 'ชื่อผู้จอง:', service: 'บริการ:', date: 'วันที่:', time: 'เวลา:' },
-     },
-     en: {
-         title: 'Manage Appointment',
-         success: 'Success!',
-         error: 'Error',
-         loading: 'Processing...',
-         resultSuccess: 'Operation completed',
-         resultConfirm: 'Appointment confirmed',
-         resultCancel: 'Appointment cancelled',
-         btn: { confirm: 'Confirm', cancel: 'Cancel', close: 'Close' },
-         label: { name: 'Name:', service: 'Service:', date: 'Date:', time: 'Time:' },
-     },
-     my: {
-         title: 'ချိန်းဆိုမှုစီမံခြင်း',
-         success: 'အောင်မြင်သည်!',
-         error: 'အမှား',
-         loading: 'လုပ်ဆောင်နေသည်...',
-         resultSuccess: 'လုပ်ဆောင်မှုပြီးပါပြီ',
-         resultConfirm: 'ချိန်းဆိုမှုအတည်ပြုပြီးပါပြီ',
-         resultCancel: 'ချိန်းဆိုမှုဖျက်ပြီးပါပြီ',
-         btn: { confirm: 'အတည်ပြုပါ', cancel: 'ဖျက်ပါ', close: 'ပိတ်ပါ' },
-         label: { name: 'အမည်:', service: 'ဝန်ဆောင်မှု:', date: 'ရက်စွဲ:', time: 'အချိန်:' },
-     },
-     km: {
-         title: 'គ្រប់គ្រងការណាត់ជួប',
-         success: 'ជោគជ័យ!',
-         error: 'កំហុស',
-         loading: 'កំពុងដំណើរការ...',
-         resultSuccess: 'ប្រតិបត្តិការបានបញ្ចប់',
-         resultConfirm: 'បានបញ្ជាក់ការណាត់ជួបរួចរាល់',
-         resultCancel: 'បានលុបចោលការណាត់ជួបរួចរាល់',
-         btn: { confirm: 'បញ្ជាក់', cancel: 'បោះបង់', close: 'បិទ' },
-         label: { name: 'ឈ្មោះ:', service: 'សេវាកម្ម:', date: 'កាលបរិច្ឆេទ:', time: 'ពេលវេលា:' },
-     },
- };
- let currentLang = localStorage.getItem('confirm_lang') || 'th';
- function t(key) {
-     const keys = key.split('.');
-     let v = translations[currentLang];
-     for (const k of keys) v = v?.[k];
-     return v || key;
- }
+        // Translation dictionary
+        const translations = {
+            th: {
+                title: 'จัดการนัดหมาย',
+                success: 'สำเร็จ!',
+                error: 'เกิดข้อผิดพลาด',
+                loading: 'กำลังดำเนินการ...',
+                resultCancel: 'ยกเลิกการนัดหมายสำเร็จแล้ว',
+                btn: { cancel: 'ยกเลิกนัดหมาย', close: 'ปิดหน้าต่าง', back: 'ไม่, ย้อนกลับ', confirmCancel: 'ใช่, ยกเลิก' },
+                label: { name: 'ชื่อผู้จอง:', service: 'บริการ:', date: 'วันที่:', time: 'เวลา:' },
+                modal: { title: 'ยืนยันการยกเลิก?', desc: 'คุณแน่ใจหรือไม่ที่จะยกเลิกการนัดหมายนี้? การกระทำนี้ไม่สามารถย้อนกลับได้' }
+            },
+            en: {
+                title: 'Manage Appointment',
+                success: 'Success!',
+                error: 'Error',
+                loading: 'Processing...',
+                resultCancel: 'Appointment cancelled successfully',
+                btn: { cancel: 'Cancel Appointment', close: 'Close', back: 'No, Back', confirmCancel: 'Yes, Cancel' },
+                label: { name: 'Name:', service: 'Service:', date: 'Date:', time: 'Time:' },
+                modal: { title: 'Confirm Cancellation?', desc: 'Are you sure you want to cancel this appointment? This action cannot be undone.' }
+            },
+            my: {
+                title: 'ချိန်းဆိုမှုစီမံခြင်း',
+                success: 'အောင်မြင်သည်!',
+                error: 'အမှား',
+                loading: 'လုပ်ဆောင်နေသည်...',
+                resultCancel: 'ချိန်းဆိုမှုဖျက်ပြီးပါပြီ',
+                btn: { cancel: 'ချိန်းဆိုမှုပယ်ဖျက်ပါ', close: 'ပိတ်ပါ', back: 'မလုပ်ပါ', confirmCancel: 'ဟုတ်ကဲ့၊ ဖျက်မည်' },
+                label: { name: 'အမည်:', service: 'ဝန်ဆောင်မှု:', date: 'ရက်စွဲ:', time: 'အချိန်:' },
+                modal: { title: 'ပယ်ဖျက်ရန် အတည်ပြုပါသလား?', desc: 'ဤချိန်းဆိုမှုကို ပယ်ဖျက်ရန် သေချာပါသလား?' }
+            },
+            km: {
+                title: 'គ្រប់គ្រងការណាត់ជួប',
+                success: 'ជោគជ័យ!',
+                error: 'កំហុស',
+                loading: 'កំពុងដំណើរការ...',
+                resultCancel: 'បានលុបចោលការណាត់ជួបរួចរាល់',
+                btn: { cancel: 'បោះបង់ការណាត់ជួប', close: 'បិទ', back: 'ទេ', confirmCancel: 'បាទ/ចាស, បោះបង់' },
+                label: { name: 'ឈ្មោះ:', service: 'សេវាកម្ម:', date: 'កាលបរិច្ឆេទ:', time: 'ពេលវេលា:' },
+                modal: { title: 'បញ្ជាក់ការបោះបង់?', desc: 'តើអ្នកប្រាកដថាចង់បោះបង់ការណាត់ជួបនេះទេ?' }
+            },
+        };
+        let currentLang = localStorage.getItem('confirm_lang') || 'th';
+        function t(key) {
+            const keys = key.split('.');
+            let v = translations[currentLang];
+            for (const k of keys) v = v?.[k] || (translations['th']?.[keys[0]]?.[keys[1]] || key); // Fallback to TH if missing
+            return typeof v === 'string' ? v : key;
+        }
 
- function updateLangUI() {
-     document.getElementById('cardTitle').textContent = t('title');
-     document.querySelectorAll('[data-tkey]').forEach(el => {
-         el.textContent = t(el.getAttribute('data-tkey'));
-     });
-     // Update loading overlay text
-     document.getElementById('loadingText').textContent = t('loading');
-     // Update result text if visible
-     if (!document.getElementById('resultContainer').classList.contains('hidden')) {
-         // Only update if resultText is a known result
-         const txt = document.getElementById('resultText').textContent;
-         if ([translations.th.resultSuccess, translations.en.resultSuccess, translations.my.resultSuccess, translations.km.resultSuccess].includes(txt)) {
-             document.getElementById('resultText').textContent = t('resultSuccess');
-         } else if ([translations.th.resultConfirm, translations.en.resultConfirm, translations.my.resultConfirm, translations.km.resultConfirm].includes(txt)) {
-             document.getElementById('resultText').textContent = t('resultConfirm');
-         } else if ([translations.th.resultCancel, translations.en.resultCancel, translations.my.resultCancel, translations.km.resultCancel].includes(txt)) {
-             document.getElementById('resultText').textContent = t('resultCancel');
-         }
-     }
- }
+        function updateLangUI() {
+            document.getElementById('cardTitle').textContent = t('title');
+            document.querySelectorAll('[data-tkey]').forEach(el => {
+                const key = el.getAttribute('data-tkey');
+                el.textContent = t(key);
+            });
+            // Update loading overlay text
+            const loadingTextEl = document.getElementById('loadingText');
+            if (loadingTextEl) loadingTextEl.textContent = t('loading');
+
+            // Update result text if visible
+            const resultContainer = document.getElementById('resultContainer');
+            if (!resultContainer.classList.contains('hidden')) {
+                const resultTextEl = document.getElementById('resultText');
+                const key = resultTextEl.getAttribute('data-result-key');
+                if (key) {
+                    resultTextEl.textContent = t(key);
+                }
+            }
+        }
         document.addEventListener('DOMContentLoaded', async () => {
             // Set language switcher
             const langSel = document.getElementById('langSwitcher');
@@ -168,8 +208,24 @@
                 document.getElementById('detail-date').textContent = urlParams.get('date') || '-';
                 document.getElementById('detail-time').textContent = urlParams.get('time') || '-';
 
-                document.getElementById('confirmBtn').onclick = () => handleAction('confirmBooking', bookingId);
-                document.getElementById('cancelBtn').onclick = () => handleAction('cancelBooking', bookingId);
+                // Setup Modal logic
+                const modal = document.getElementById('confirmModal');
+                const cancelBtn = document.getElementById('cancelBtn');
+                const modalCancel = document.getElementById('modalCancel');
+                const modalConfirm = document.getElementById('modalConfirm');
+
+                cancelBtn.onclick = () => {
+                    modal.classList.remove('hidden');
+                };
+
+                modalCancel.onclick = () => {
+                    modal.classList.add('hidden');
+                };
+
+                modalConfirm.onclick = () => {
+                    modal.classList.add('hidden');
+                    handleAction('cancelBooking', bookingId);
+                };
 
             } catch (error) {
                 console.error("Initialization Error:", error);
@@ -181,52 +237,55 @@
         });
 
         // --- วางทับฟังก์ชันนี้ทั้งหมดใน confirm.html ---
-async function handleAction(action, bookingId) {
-    showLoading(true, "กำลังดำเนินการ...");
-    try {
-        // *** จุดที่แก้ไข: เปลี่ยนรูปแบบการ fetch ให้เรียบง่ายขึ้น ***
-        // เราส่งข้อมูลทั้งหมดผ่าน URL อยู่แล้ว จึงไม่จำเป็นต้องมี headers หรือ body
-        const response = await fetch(`${WEB_APP_URL}?action=${action}&id=${bookingId}`, {
-            method: 'POST' 
-        });
+        async function handleAction(action, bookingId) {
+            // showLoading(true, t('loading')); // Use t() for loading text
+            showLoading(true); // Don't pass text, let showLoading translate it
 
-        const resultText = await response.text();
-        if (!response.ok) {
-            // ถ้าเซิร์ฟเวอร์ส่งข้อความ error กลับมา ให้แสดงข้อความนั้น
-            throw new Error(resultText || "การดำเนินการไม่สำเร็จ");
+            try {
+                // *** จุดที่แก้ไข: เปลี่ยนรูปแบบการ fetch ให้เรียบง่ายขึ้น ***
+                // เราส่งข้อมูลทั้งหมดผ่าน URL อยู่แล้ว จึงไม่จำเป็นต้องมี headers หรือ body
+                const response = await fetch(`${WEB_APP_URL}?action=${action}&id=${bookingId}`, {
+                    method: 'POST'
+                });
+
+                const resultText = await response.text();
+                if (!response.ok) {
+                    // ถ้าเซิร์ฟเวอร์ส่งข้อความ error กลับมา ให้แสดงข้อความนั้น
+                    throw new Error(resultText || "การดำเนินการไม่สำเร็จ");
+                }
+
+                let messageKey = 'resultCancel'; // Default key for cancel
+                // You can add logic here if other actions are added later
+
+                showSuccess(messageKey); // Pass key instead of raw message
+
+            } catch (error) {
+                // แสดงข้อความ Error ที่มาจาก Server หรือ "Load failed" กรณีเชื่อมต่อไม่ได้เลย
+                showError(error.message); // Pass raw error message
+            }
         }
-
-        let message = 'ดำเนินการเรียบร้อยแล้ว';
-        if (action === 'confirmBooking') {
-            message = 'ยืนยันการนัดหมายสำเร็จแล้ว';
-        } else if (action === 'cancelBooking') {
-            message = 'ยกเลิกการนัดหมายสำเร็จแล้ว';
-        }
-        showSuccess(message);
-
-    } catch (error) {
-        // แสดงข้อความ Error ที่มาจาก Server หรือ "Load failed" กรณีเชื่อมต่อไม่ได้เลย
-        showError(`ผิดพลาด: ${error.message}`);
-    }
-}
 
         function showLoading(isLoading, text) {
             const overlay = document.getElementById('loadingOverlay');
+            // Use translation for loading text
             document.getElementById('loadingText').textContent = text || t('loading');
             isLoading ? overlay.classList.remove('hidden') : overlay.classList.add('hidden');
         }
 
-        function showSuccess(message) {
+        function showSuccess(messageKey) {
             showLoading(false);
             document.getElementById('detailsContainer').classList.add('hidden');
             document.getElementById('buttonsContainer').classList.add('hidden');
             document.getElementById('cardTitle').textContent = t('success');
             const resultContainer = document.getElementById('resultContainer');
-            document.getElementById('resultText').textContent = message;
+
+            // Store the key so updateLangUI can re-translate if language changes
+            document.getElementById('resultText').setAttribute('data-result-key', messageKey);
+            document.getElementById('resultText').textContent = t(messageKey);
+
             resultContainer.classList.remove('hidden');
-            updateLangUI();
         }
-        
+
         function showError(message) {
             showLoading(false);
             document.getElementById('detailsContainer').classList.add('hidden');
@@ -239,4 +298,5 @@ async function handleAction(action, bookingId) {
         }
     </script>
 </body>
+
 </html>

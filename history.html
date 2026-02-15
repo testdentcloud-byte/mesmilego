@@ -1041,23 +1041,23 @@
                 `<svg class="w-12 h-12 text-base mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>` :
                 `<svg class="w-12 h-12 text-error mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
 
-                        $('popupContent').innerHTML = `
+            $('popupContent').innerHTML = `
                     <div class="py-4 text-center">${icon}<p>${msg}</p></div>
                     <div class="mt-4 text-center">
                         <button id="popupCloseBtn" class="btn btn-secondary w-full sm:w-auto px-6">${t('popup.close')}</button>
                     </div>`;
-                        // Add LIFF close logic for booking success
-                        setTimeout(() => {
-                                const btn = document.getElementById('popupCloseBtn');
-                                if (btn) {
-                                        btn.onclick = function() {
-                                                hidePopup();
-                                                if (msgKey === 'popup.bookingSuccess' && window.liff && typeof liff.closeWindow === 'function') {
-                                                        liff.closeWindow();
-                                                }
-                                        };
-                                }
-                        }, 0);
+            // Add LIFF close logic for booking success
+            setTimeout(() => {
+                const btn = document.getElementById('popupCloseBtn');
+                if (btn) {
+                    btn.onclick = function () {
+                        hidePopup();
+                        if (msgKey === 'popup.bookingSuccess' && window.liff && typeof liff.closeWindow === 'function') {
+                            liff.closeWindow();
+                        }
+                    };
+                }
+            }, 0);
             const popupEl = $('popup');
             popupEl.style.display = 'flex';
             setTimeout(() => popupEl.classList.add('visible'), 10);
@@ -1819,7 +1819,7 @@
                     contents: [
                         {
                             type: 'text',
-                            text: 'ทำการจองให้เรียบร้อยค่ะ',
+                            text: t('flex.footerTitle'),
                             wrap: true,
                             size: 'sm',
                             color: '#00B8B0',
@@ -1829,7 +1829,7 @@
                         },
                         {
                             type: 'text',
-                            text: 'เพื่อความรวดเร็ว \nกรุณากด ยืนยัน นัดหมาย \nก่อนวันนัด1 วันนะคะ \n\nท่านสามารถตรวจสอบประวัติการจอง และ กดยืนยันหรือยกเลิกนัดหมาย ได้ที่ เมนู “นัดหมาย/ยืนยัน” เลือก “ข้อมูลการนัดหมาย” และกด“ยืนยัน”ค่ะ  แล้วพบกันนะคะ',
+                            text: t('flex.footerBody'),
                             wrap: true,
                             size: 'sm',
                             color: '#555555',
