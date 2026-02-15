@@ -86,7 +86,8 @@
 </head>
 
 <body class="bg-slate-100">
-    <div id="loadingOverlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-[100]">
+    <div id="loadingOverlay"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-[100]">
         <div class="spinner"></div>
     </div>
 
@@ -126,7 +127,7 @@
                     </button>
                 </div>
             </div>
-             <nav class="flex-grow space-y-1">
+            <nav class="flex-grow space-y-1">
                 <p class="text-xs text-slate-400 uppercase font-semibold px-3 mb-2">Main Menu</p>
                 <a href="book.html"
                     class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
@@ -187,7 +188,8 @@
             </nav>
         </aside>
 
-<main class="flex-1 flex flex-col min-w-0">            <header class="bg-white border-b border-slate-200 p-4 flex items-center justify-between">
+        <main class="flex-1 flex flex-col min-w-0">
+            <header class="bg-white border-b border-slate-200 p-4 flex items-center justify-between">
                 <div class="relative w-1/3">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none"
@@ -201,8 +203,10 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center gap-2">
-                        <label for="branchSelector" class="text-sm font-medium text-slate-700 font-thai">โรงงาน :</label>
-                        <select id="branchSelector" class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 font-thai">
+                        <label for="branchSelector" class="text-sm font-medium text-slate-700 font-thai">โรงงาน
+                            :</label>
+                        <select id="branchSelector"
+                            class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 font-thai">
                             <option value="1">CPF มีนบุรี 1</option>
                             <option value="2">CPF มีนบุรี 2</option>
                         </select>
@@ -220,11 +224,11 @@
                     <div class="border-b border-slate-200">
                         <nav id="tabsContainer" class="-mb-px flex space-x-8" aria-label="Tabs">
                             <button data-tab-target="#kanbanViewContent"
-                                class="tab-button whitespace-nowrap py-3 px-1 border-b-2 text-sm font-thai active">
+                                class="tab-button whitespace-nowrap py-3 px-1 border-b-2 text-sm font-thai">
                                 มุมมองการ์ด
                             </button>
                             <button data-tab-target="#listViewContent"
-                                class="tab-button whitespace-nowrap py-3 px-1 border-b-2 text-sm font-thai">
+                                class="tab-button whitespace-nowrap py-3 px-1 border-b-2 text-sm font-thai active">
                                 มุมมองรายการ
                             </button>
                         </nav>
@@ -268,7 +272,7 @@
                     </div>
                 </div>
 
-                <div id="kanbanViewContent" data-tab-content>
+                <div id="kanbanViewContent" data-tab-content class="hidden">
                     <div class="flex space-x-4 pb-4 overflow-x-auto">
                         <div class="bg-slate-50 rounded-lg w-80 md:w-72 flex-shrink-0">
                             <div class="p-3 border-t-4 border-yellow-400 rounded-t-lg">
@@ -321,46 +325,57 @@
                     </div>
                 </div>
 
-<div id="listViewContent" data-tab-content class="hidden">
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-        <div class="overflow-x-auto w-full">
-            <table class="min-w-max divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            ชื่อ-สกุล</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            วันที่/เวลา</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            บริการ</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            เบอร์โทร</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            เลขบัตร/ประกันสังคม</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            โรค/แพ้ยา</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            หมอ</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            ห้อง</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            สถานะ</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
-                            หมายเหตุ</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai min-w-[320px]">
-                            การดำเนินการ</th>
-                    </tr>
-                </thead>
-                <tbody id="appointmentTableBody" class="bg-white divide-y divide-gray-200">
-                    </tbody>
-            </table>
-        </div>
+                <div id="listViewContent" data-tab-content>
+                    <div class="bg-white shadow rounded-lg overflow-hidden">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full min-w-[1150px] table-fixed divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            ชื่อ-สกุล</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            วันที่/เวลา</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            บริการ</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            เบอร์โทร</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            เลขบัตร/ประกันสังคม</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            โรค/แพ้ยา</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            หมอ</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            ห้อง</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            สถานะ</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai">
+                                            หมายเหตุ</th>
+                                        <th scope="col"
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-thai w-[280px]">
+                                            การดำเนินการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="appointmentTableBody" class="bg-white divide-y divide-gray-200">
+                                </tbody>
+                            </table>
+                        </div>
 
-        <div id="listPagination"
-            class="p-4 border-t border-gray-200 flex justify-between items-center text-sm text-gray-600">
-        </div>
-    </div>
-</div>
+                        <div id="listPagination"
+                            class="p-4 border-t border-gray-200 flex justify-between items-center text-sm text-gray-600">
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -425,7 +440,7 @@
         }
 
         let allAppointmentsData = [];
-        let currentView = 'kanban'; // 'kanban' or 'list'
+        let currentView = 'list'; // 'kanban' or 'list'
         let currentPage = 1;
         const itemsPerPage = 10;
 
@@ -491,11 +506,11 @@
             // Branch selector logic with admin permissions
             const branchSelector = document.getElementById('branchSelector');
             const savedBranch = localStorage.getItem('branch') || '1';
-            
+
             // ตรวจสอบสิทธิ์สาขาของแอดมิน
             const adminBranchesStr = localStorage.getItem('adminBranches');
             const adminBranches = adminBranchesStr ? JSON.parse(adminBranchesStr) : ['1'];
-            
+
             // ถ้าแอดมินดูแลเฉพาะบางสาขา ให้กรองตัวเลือก
             if (adminBranches[0] !== 'all') {
                 // ลบตัวเลือกที่ไม่อยู่ในสิทธิ์
@@ -505,7 +520,7 @@
                         opt.remove();
                     }
                 });
-                
+
                 // ถ้าสาขาปัจจุบันไม่อยู่ในสิทธิ์ ให้เปลี่ยนเป็นสาขาแรกที่มีสิทธิ์
                 if (!adminBranches.includes(savedBranch)) {
                     localStorage.setItem('branch', adminBranches[0]);
@@ -516,8 +531,8 @@
             } else {
                 branchSelector.value = savedBranch;
             }
-            
-            branchSelector.addEventListener('change', function() {
+
+            branchSelector.addEventListener('change', function () {
                 localStorage.setItem('branch', this.value);
                 location.reload();
             });
@@ -538,74 +553,74 @@
 
             document.getElementById('exportCsvBtn').addEventListener('click', exportToCsv);
             document.getElementById('exportAllBranchesBtn').addEventListener('click', exportAllBranchesToCsv);
-        /**
-         * Export all branches (hardcoded ['1','2'] but can be extended)
-         */
-        async function exportAllBranchesToCsv() {
-            showLoading();
-            try {
-                // สามารถเพิ่มสาขาได้ที่นี่ เช่น ['1','2','3','4']
-                const branches = ['1', '2'];
-                let allData = [];
-                for (const branch of branches) {
-                    const res = await fetch(`${WEB_APP_URL}?action=fetchBookings&branch=${branch}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        allData = allData.concat(data.map(d => ({ ...d, branch })));
+            /**
+             * Export all branches (hardcoded ['1','2'] but can be extended)
+             */
+            async function exportAllBranchesToCsv() {
+                showLoading();
+                try {
+                    // สามารถเพิ่มสาขาได้ที่นี่ เช่น ['1','2','3','4']
+                    const branches = ['1', '2'];
+                    let allData = [];
+                    for (const branch of branches) {
+                        const res = await fetch(`${WEB_APP_URL}?action=fetchBookings&branch=${branch}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            allData = allData.concat(data.map(d => ({ ...d, branch })));
+                        }
                     }
-                }
-                if (allData.length === 0) {
-                    showAlert('ไม่มีข้อมูลสำหรับ Export', null, null, false);
+                    if (allData.length === 0) {
+                        showAlert('ไม่มีข้อมูลสำหรับ Export', null, null, false);
+                        hideLoading();
+                        return;
+                    }
+                    // กำหนดหัวข้อคอลัมน์ (ภาษาไทย) ตามที่ผู้ใช้ต้องการ
+                    const headers = [
+                        'รหัส', 'ไลน์ไอดี', 'ชื่อ', 'นามสกุล', 'เบอร์โทร', 'เลขบัตร/ประกัน',
+                        'โรค/แพ้', 'หมายเหตุ', 'รายการบริการ', 'ราคารวม', 'วันที่', 'เวลา',
+                        'สถานะ', 'เวลาบันทึก', 'CalendarEventId', 'หมอ', 'ห้อง', 'สาขา'
+                    ];
+                    const rows = allData.map(item => [
+                        sanitizeCsvField(item.idKey),
+                        sanitizeCsvField(item.userlineid),
+                        sanitizeCsvField(item.firstName),
+                        sanitizeCsvField(item.lastName),
+                        sanitizeCsvField(item.phonenumber),
+                        sanitizeCsvField(item.idCardOrSocial),
+                        sanitizeCsvField(item.diseaseAllergy),
+                        sanitizeCsvField(item.note),
+                        sanitizeCsvField(item.service),
+                        sanitizeCsvField(item.price),
+                        sanitizeCsvField(item.date),
+                        sanitizeCsvField(item.time),
+                        sanitizeCsvField(item.status),
+                        sanitizeCsvField(item.timestamp),
+                        sanitizeCsvField(item.calendarEventId),
+                        sanitizeCsvField(item.doctor),
+                        sanitizeCsvField(item.room),
+                        sanitizeCsvField(item.branch)
+                    ].join(','));
+                    const csvContent = [headers.join(','), ...rows].join('\n');
+                    const blob = new Blob(['\uFEFF' + csvContent], {
+                        type: 'text/csv;charset=utf-8;'
+                    });
+                    const link = document.createElement("a");
+                    if (link.download !== undefined) {
+                        const url = URL.createObjectURL(blob);
+                        const today = new Date().toISOString().slice(0, 10);
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", `appointments-all-branches-${today}.csv`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                } catch (err) {
+                    showAlert('เกิดข้อผิดพลาด: ' + err.message, null, null, false);
+                } finally {
                     hideLoading();
-                    return;
                 }
-                // กำหนดหัวข้อคอลัมน์ (ภาษาไทย) ตามที่ผู้ใช้ต้องการ
-                const headers = [
-                    'รหัส', 'ไลน์ไอดี', 'ชื่อ', 'นามสกุล', 'เบอร์โทร', 'เลขบัตร/ประกัน',
-                    'โรค/แพ้', 'หมายเหตุ', 'รายการบริการ', 'ราคารวม', 'วันที่', 'เวลา',
-                    'สถานะ', 'เวลาบันทึก', 'CalendarEventId', 'หมอ', 'ห้อง', 'สาขา'
-                ];
-                const rows = allData.map(item => [
-                    sanitizeCsvField(item.idKey),
-                    sanitizeCsvField(item.userlineid),
-                    sanitizeCsvField(item.firstName),
-                    sanitizeCsvField(item.lastName),
-                    sanitizeCsvField(item.phonenumber),
-                    sanitizeCsvField(item.idCardOrSocial),
-                    sanitizeCsvField(item.diseaseAllergy),
-                    sanitizeCsvField(item.note),
-                    sanitizeCsvField(item.service),
-                    sanitizeCsvField(item.price),
-                    sanitizeCsvField(item.date),
-                    sanitizeCsvField(item.time),
-                    sanitizeCsvField(item.status),
-                    sanitizeCsvField(item.timestamp),
-                    sanitizeCsvField(item.calendarEventId),
-                    sanitizeCsvField(item.doctor),
-                    sanitizeCsvField(item.room),
-                    sanitizeCsvField(item.branch)
-                ].join(','));
-                const csvContent = [headers.join(','), ...rows].join('\n');
-                const blob = new Blob(['\uFEFF' + csvContent], {
-                    type: 'text/csv;charset=utf-8;'
-                });
-                const link = document.createElement("a");
-                if (link.download !== undefined) {
-                    const url = URL.createObjectURL(blob);
-                    const today = new Date().toISOString().slice(0, 10);
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", `appointments-all-branches-${today}.csv`);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
-            } catch (err) {
-                showAlert('เกิดข้อผิดพลาด: ' + err.message, null, null, false);
-            } finally {
-                hideLoading();
             }
-        }
 
             tabsContainer.addEventListener('click', (e) => {
                 const targetButton = e.target.closest('.tab-button');
@@ -623,7 +638,7 @@
                 renderCurrentView();
             });
             // Set initial active tab content
-            document.querySelector('#kanbanViewContent').classList.remove('hidden');
+            document.querySelector('#listViewContent').classList.remove('hidden');
         });
 
         async function fetchInitialData() {
@@ -639,10 +654,40 @@
                     if (!name && (d.firstName || d.lastName)) {
                         name = ((d.firstName || '') + ' ' + (d.lastName || '')).trim();
                     }
+
+                    // Robust Date Parsing
+                    let pDate = new Date(0);
+                    try {
+                        if (d.date) {
+                            let datePart = d.date.trim();
+                            // Assume DD-MM-YYYY if starts with day
+                            if (datePart.match(/^\d{1,2}-\d{1,2}-\d{4}$/)) {
+                                datePart = datePart.split('-').reverse().join('-');
+                            }
+
+                            let timePart = (d.time || '00:00').toString().trim();
+                            timePart = timePart.replace('.', ':');
+                            const tParts = timePart.split(':');
+                            if (tParts.length === 2) {
+                                // Pad hour/minute if needed
+                                timePart = `${tParts[0].padStart(2, '0')}:${tParts[1].padStart(2, '0')}`;
+                            } else {
+                                timePart = '00:00';
+                            }
+
+                            const validTs = Date.parse(`${datePart}T${timePart}:00`);
+                            if (!isNaN(validTs)) {
+                                pDate = new Date(validTs);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Date parse error for:', d, e);
+                    }
+
                     return {
                         ...d,
                         name,
-                        parsedDate: new Date(d.date.split('-').reverse().join('-') + 'T' + d.time)
+                        parsedDate: pDate
                     };
                 });
                 renderCurrentView();
@@ -742,7 +787,7 @@
             const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
             if (paginatedData.length === 0) {
-                appointmentTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500 p-4 font-thai">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>`;
+                appointmentTableBody.innerHTML = `<tr><td colspan="11" class="text-center text-gray-500 p-4 font-thai">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>`;
                 renderPagination(0, 0, 0); // Clear pagination
                 return;
             }
@@ -787,14 +832,14 @@
                     </div>`;
             } else if (type === 'row') {
                 return `
-                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 font-thai sticky left-0 bg-white z-10">${item.name}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900 font-thai sticky left-0 bg-white z-10 truncate" title="${item.name}">${item.name}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.date} ${item.time}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.service}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 font-thai truncate" title="${item.service}">${item.service}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.phonenumber}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.idCardOrSocial || '-'}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.diseaseAllergy || '-'}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.doctor || '-'}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.room || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 font-thai truncate" title="${item.idCardOrSocial || '-'}">${item.idCardOrSocial || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 font-thai truncate" title="${item.diseaseAllergy || '-'}">${item.diseaseAllergy || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 font-thai truncate" title="${item.doctor || '-'}">${item.doctor || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 font-thai truncate" title="${item.room || '-'}">${item.room || '-'}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-thai">${item.status}</td>
                     <td class="px-4 py-3 text-sm text-gray-500 font-thai max-w-xs truncate" title="${item.note || '-'}">${item.note || '-'}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
@@ -883,7 +928,7 @@
                 // ค้นหา branch จากข้อมูลการจอง
                 const appointment = allAppointmentsData.find(appt => appt.idKey === id);
                 const branch = appointment && appointment.branch ? appointment.branch : (localStorage.getItem('branch') || '1');
-                
+
                 fetch(`${WEB_APP_URL}?action=${action}&id=${encodeURIComponent(id)}&branch=${branch}`, {
                     method: 'POST'
                 })

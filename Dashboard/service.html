@@ -10,7 +10,8 @@
     <!-- Assume Config.js defines CONFIG_URL -->
     <!-- <script src="Config.js"></script> -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap"
+        rel="stylesheet" />
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -20,31 +21,36 @@
             width: 6px;
             height: 6px;
         }
-        
+
         .table-scroll-container::-webkit-scrollbar-thumb {
             background-color: #cbd5e1;
             /* slate-300 */
             border-radius: 3px;
         }
-        
+
         .table-scroll-container::-webkit-scrollbar-track {
             background-color: #f1f5f9;
             /* slate-100 */
         }
+
         /* Ensure hidden class takes precedence */
-        
+
         .hidden {
             display: none !important;
         }
+
         /* Loading Spinner */
         .spinner {
             width: 3rem;
             height: 3rem;
-            border: .5rem solid #e5e7eb; /* slate-200 */
-            border-top: .5rem solid #4ade80; /* green-600 */
+            border: .5rem solid #e5e7eb;
+            /* slate-200 */
+            border-top: .5rem solid #4ade80;
+            /* green-600 */
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
             to {
                 transform: rotate(360deg);
@@ -70,79 +76,79 @@
         <!-- ===================================================================
         (B) แสดงชื่อผู้ดูแลที่ล็อกอินมาแล้ว (ดึงจาก localStorage.adminName)
         =================================================================== -->
-            <div class="bg-slate-50 p-3 rounded-lg mb-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <div>
-                            <p id="adminName" class="text-sm font-semibold text-slate-700 font-thai">Dashboard User</p>
-                            <p class="text-xs text-slate-500 font-thai">ผู้ดูแลระบบ</p>
-                        </div>
+        <div class="bg-slate-50 p-3 rounded-lg mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div>
+                        <p id="adminName" class="text-sm font-semibold text-slate-700 font-thai">Dashboard User</p>
+                        <p class="text-xs text-slate-500 font-thai">ผู้ดูแลระบบ</p>
                     </div>
-                    <!-- ปุ่ม Logout -->
-                    <button onclick="logout()" class="text-red-500 hover:text-red-700 text-sm font-thai">
-                        logout
-                    </button>
                 </div>
+                <!-- ปุ่ม Logout -->
+                <button onclick="logout()" class="text-red-500 hover:text-red-700 text-sm font-thai">
+                    logout
+                </button>
             </div>
+        </div>
         <nav class="flex-grow space-y-1">
-                <p class="text-xs text-slate-400 uppercase font-semibold px-3 mb-2">Main Menu</p>
-                <a href="book.html"
-                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span>จองนัดหมายใหม่</span>
-                </a>
-                <a href="appointment.html"
-                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>จัดการนัดหมาย</span>
-                </a>
-                <a href="service.html"
-                    class="flex items-center space-x-3 px-3 py-2.5 bg-green-100 text-green-700 rounded-md text-sm font-semibold">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <span>จัดการบริการ</span>
-                </a>
-                <a href="member.html"
-                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    <span>จัดการสมาชิก</span>
-                </a>
-                <a href="doctor.html"
-                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>จัดการข้อมูลหมอ</span>
-                </a>
-                <a href="setting.html"
-                    class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span>ตั้งค่า</span>
-                </a>
-            </nav>
+            <p class="text-xs text-slate-400 uppercase font-semibold px-3 mb-2">Main Menu</p>
+            <a href="book.html"
+                class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>จองนัดหมายใหม่</span>
+            </a>
+            <a href="appointment.html"
+                class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>จัดการนัดหมาย</span>
+            </a>
+            <a href="service.html"
+                class="flex items-center space-x-3 px-3 py-2.5 bg-green-100 text-green-700 rounded-md text-sm font-semibold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span>จัดการบริการ</span>
+            </a>
+            <a href="member.html"
+                class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span>จัดการสมาชิก</span>
+            </a>
+            <a href="doctor.html"
+                class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>จัดการข้อมูลหมอ</span>
+            </a>
+            <a href="setting.html"
+                class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-green-700 rounded-md text-sm font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>ตั้งค่า</span>
+            </a>
+        </nav>
     </aside>
 
     <!-- Main Content -->
@@ -151,25 +157,36 @@
         <header class="bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-20">
             <div class="relative w-1/3">
                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
                 </span>
-                <input type="text" id="serviceSearch" placeholder="ค้นหาบริการ..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 font-thai">
+                <input type="text" id="serviceSearch" placeholder="ค้นหาบริการ..."
+                    class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 font-thai">
             </div>
-                    <div class="flex items-center gap-2">
-                        <label for="branchSelector" class="text-sm font-medium text-slate-700 font-thai">โรงงาน :</label>
-                        <select id="branchSelector" class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 font-thai">
-                            <option value="1">CPF มีนบุรี 1</option>
-                            <option value="2">CPF มีนบุรี 2</option>
-                        </select>
-                    </div>
+            <div class="flex items-center gap-2">
+                <label for="branchSelector" class="text-sm font-medium text-slate-700 font-thai">โรงงาน :</label>
+                <select id="branchSelector"
+                    class="p-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 font-thai">
+                    <option value="1">CPF มีนบุรี 1</option>
+                    <option value="2">CPF มีนบุรี 2</option>
+                </select>
+            </div>
         </header>
 
         <!-- Page Content -->
         <div class="flex-1 p-6 overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-semibold text-slate-800 font-thai">🛠️ จัดการบริการ</h1>
-                <button onclick="showAddForm()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center space-x-2 font-thai">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                <button onclick="showAddForm()"
+                    class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center space-x-2 font-thai">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                            clip-rule="evenodd" />
+                    </svg>
                     <span>เพิ่มบริการใหม่</span>
                 </button>
             </div>
@@ -180,30 +197,71 @@
                 <form id="serviceForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div class="md:col-span-2">
                         <label for="form-id" class="block text-sm font-medium text-slate-700 font-thai">ไอดี</label>
-                        <input type="text" id="form-id" name="ไอดี" placeholder="ระบบสร้างอัตโนมัติ" class="mt-1 block w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm shadow-sm" readonly>
+                        <input type="text" id="form-id" name="ไอดี" placeholder="ระบบสร้างอัตโนมัติ"
+                            class="mt-1 block w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm shadow-sm"
+                            readonly>
                     </div>
                     <div>
-                        <label for="form-service-name" class="block text-sm font-medium text-slate-700 font-thai">ชื่อบริการ <span class="text-red-500">*</span></label>
-                        <input type="text" id="form-service-name" name="รายการ" placeholder="เช่น ตัดผม, ทำสีผม" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
+                        <label for="form-service-name"
+                            class="block text-sm font-medium text-slate-700 font-thai">ชื่อบริการ <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="form-service-name" name="รายการ" placeholder="เช่น ตัดผม, ทำสีผม"
+                            required
+                            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
                     </div>
                     <div>
-                        <label for="form-price" class="block text-sm font-medium text-slate-700 font-thai">ราคา (บาท) <span class="text-red-500">*</span></label>
-                        <input type="number" id="form-price" name="ราคา" placeholder="เช่น 300" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
+                        <label for="form-service-name-en"
+                            class="block text-sm font-medium text-slate-700 font-thai">Service Name (EN)</label>
+                        <input type="text" id="form-service-name-en" name="Service Name EN"
+                            placeholder="Service Name in English"
+                            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
+                    </div>
+                    <div>
+                        <label for="form-service-name-my"
+                            class="block text-sm font-medium text-slate-700 font-thai">Service Name (MY)</label>
+                        <input type="text" id="form-service-name-my" name="Service Name MY"
+                            placeholder="Service Name in Burmese"
+                            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
+                    </div>
+                    <div>
+                        <label for="form-service-name-km"
+                            class="block text-sm font-medium text-slate-700 font-thai">Service Name (KM)</label>
+                        <input type="text" id="form-service-name-km" name="Service Name KM"
+                            placeholder="Service Name in Khmer"
+                            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
+                    </div>
+                    <div>
+                        <label for="form-price" class="block text-sm font-medium text-slate-700 font-thai">ราคา (บาท)
+                            <span class="text-red-500">*</span></label>
+                        <input type="number" id="form-price" name="ราคา" placeholder="เช่น 300" required
+                            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai">
                     </div>
                     <div class="md:col-span-2">
-                        <label for="form-description" class="block text-sm font-medium text-slate-700 font-thai">รายละเอียดบริการ</label>
-                        <textarea id="form-description" name="รายละเอียด" placeholder="อธิบายเกี่ยวกับบริการเพิ่มเติม (ถ้ามี)" rows="3" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai"></textarea>
+                        <label for="form-description"
+                            class="block text-sm font-medium text-slate-700 font-thai">รายละเอียดบริการ</label>
+                        <textarea id="form-description" name="รายละเอียด"
+                            placeholder="อธิบายเกี่ยวกับบริการเพิ่มเติม (ถ้ามี)" rows="3"
+                            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-thai"></textarea>
                     </div>
                     <div class="md:col-span-2">
-                        <label for="imgInput" class="block text-sm font-medium text-slate-700 font-thai">รูปภาพประกอบ</label>
-                        <input type="file" id="imgInput" accept="image/*" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
-                        <img id="imgPreview" class="hidden w-40 h-32 mt-2 object-cover rounded-md border border-slate-200">
+                        <label for="imgInput"
+                            class="block text-sm font-medium text-slate-700 font-thai">รูปภาพประกอบ</label>
+                        <input type="file" id="imgInput" accept="image/*"
+                            class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                        <img id="imgPreview"
+                            class="hidden w-40 h-32 mt-2 object-cover rounded-md border border-slate-200">
                         <input type="hidden" name="รูปภาพOLD" id="รูปภาพOLD">
                     </div>
                     <div class="md:col-span-2 flex justify-end space-x-3 mt-2">
-                        <button type="button" onclick="hideForm()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-4 rounded-md text-sm font-thai">ยกเลิก</button>
-                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center space-x-2 font-thai">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M7.5 1C6.11929 1 5 2.11929 5 3.5V4H4C3.44772 4 3 4.44772 3 5V17C3 17.5523 3.44772 18 4 18H16C16.5523 18 17 17.5523 17 17V5C17 4.44772 16.5523 4 16 4H15V3.5C15 2.11929 13.8807 1 12.5 1H7.5ZM7 3.5C7 3.22386 7.22386 3 7.5 3H12.5C12.7761 3 13 3.22386 13 3.5V4H7V3.5Z M6 6H14V16H6V6Z" /></svg>
+                        <button type="button" onclick="hideForm()"
+                            class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-4 rounded-md text-sm font-thai">ยกเลิก</button>
+                        <button type="submit"
+                            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md text-sm flex items-center space-x-2 font-thai">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path
+                                    d="M7.5 1C6.11929 1 5 2.11929 5 3.5V4H4C3.44772 4 3 4.44772 3 5V17C3 17.5523 3.44772 18 4 18H16C16.5523 18 17 17.5523 17 17V5C17 4.44772 16.5523 4 16 4H15V3.5C15 2.11929 13.8807 1 12.5 1H7.5ZM7 3.5C7 3.22386 7.22386 3 7.5 3H12.5C12.7761 3 13 3.22386 13 3.5V4H7V3.5Z M6 6H14V16H6V6Z" />
+                            </svg>
                             <span>บันทึกบริการ</span>
                         </button>
                     </div>
@@ -220,40 +278,40 @@
         </div>
     </main>
 
-   <!-- Assume Config.js defines WEB_APP_URL -->
+    <!-- Assume Config.js defines WEB_APP_URL -->
     <script src="Config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // ตรวจสอบสถานะล็อกอิน
             const isLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
             if (!isLoggedIn) {
-              // ถ้าไม่ได้ล็อกอิน ให้เด้งไปหน้า login ทันที
-              window.location.href = 'login.html';
-              return; // หยุดการทำงานที่เหลือบนหน้านี้
+                // ถ้าไม่ได้ล็อกอิน ให้เด้งไปหน้า login ทันที
+                window.location.href = 'login.html';
+                return; // หยุดการทำงานที่เหลือบนหน้านี้
             }
-        
+
             // กรณีล็อกอินแล้ว ให้มาดึงชื่อ admin และโหลดข้อมูลสมาชิกตามเดิม
             const adminName = localStorage.getItem('adminName') || 'Admin';
             document.getElementById('adminName').textContent = adminName;
-          });
-        
-          // ฟังก์ชัน Logout (เหมือนเดิม)
-          function logout() {
+        });
+
+        // ฟังก์ชัน Logout (เหมือนเดิม)
+        function logout() {
             localStorage.removeItem('isAdminLoggedIn');
             localStorage.removeItem('adminName');
             localStorage.removeItem('adminBranches');
             localStorage.removeItem('branch');
             window.location.href = 'login.html';
-          }
+        }
 
         // Branch selector logic with admin permissions
         const branchSelector = document.getElementById('branchSelector');
         const savedBranch = localStorage.getItem('branch') || '1';
-        
+
         // ตรวจสอบสิทธิ์สาขาของแอดมิน
         const adminBranchesStr = localStorage.getItem('adminBranches');
         const adminBranches = adminBranchesStr ? JSON.parse(adminBranchesStr) : ['1'];
-        
+
         // ถ้าแอดมินดูแลเฉพาะบางสาขา ให้กรองตัวเลือก
         if (adminBranches[0] !== 'all') {
             // ลบตัวเลือกที่ไม่อยู่ในสิทธิ์
@@ -263,7 +321,7 @@
                     opt.remove();
                 }
             });
-            
+
             // ถ้าสาขาปัจจุบันไม่อยู่ในสิทธิ์ ให้เปลี่ยนเป็นสาขาแรกที่มีสิทธิ์
             if (!adminBranches.includes(savedBranch)) {
                 localStorage.setItem('branch', adminBranches[0]);
@@ -274,8 +332,8 @@
         } else {
             branchSelector.value = savedBranch;
         }
-        
-        branchSelector.addEventListener('change', function() {
+
+        branchSelector.addEventListener('change', function () {
             localStorage.setItem('branch', this.value);
             location.reload();
         });
@@ -310,11 +368,11 @@
         function setupImagePreview() {
             const imgInput = document.getElementById('imgInput');
             const imgPreview = document.getElementById('imgPreview');
-            imgInput.addEventListener('change', function() {
+            imgInput.addEventListener('change', function () {
                 const file = this.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         imgPreview.src = e.target.result;
                         imgPreview.classList.remove('hidden');
                     };
@@ -335,7 +393,7 @@
                 const file = imgInput.files[0];
                 return new Promise(resolve => {
                     const reader = new FileReader();
-                    reader.onloadend = function() {
+                    reader.onloadend = function () {
                         dataObject['รูปภาพBase64'] = reader.result.split(',')[1];
                         dataObject['รูปภาพMimeType'] = file.type;
                         dataObject['รูปภาพFilename'] = file.name;
@@ -406,7 +464,10 @@
               </td>
               <td class="px-4 py-3 align-top">
                   <div class="font-medium text-slate-800 font-thai">${service['รายการ']}</div>
-                  <div class="text-xs text-slate-500 font-mono">ID: ${service['ไอดี'] || '-'}</div>
+                  ${service['Service Name EN'] ? `<div class="text-xs text-slate-500"><span class="font-semibold">EN:</span> ${service['Service Name EN']}</div>` : ''}
+                  ${service['Service Name MY'] ? `<div class="text-xs text-slate-500"><span class="font-semibold">MY:</span> ${service['Service Name MY']}</div>` : ''}
+                  ${service['Service Name KM'] ? `<div class="text-xs text-slate-500"><span class="font-semibold">KM:</span> ${service['Service Name KM']}</div>` : ''}
+                  <div class="text-xs text-slate-400 font-mono mt-1">ID: ${service['ไอดี'] || '-'}</div>
               </td>
               <td class="px-4 py-3 text-slate-600 align-top font-thai max-w-xs truncate" title="${service['รายละเอียด']}">${service['รายละเอียด'] || '-'}</td>
               <td class="px-4 py-3 whitespace-nowrap text-slate-700 font-medium align-top font-thai">${service['ราคา'] ? parseFloat(service['ราคา']).toLocaleString('th-TH', { style: 'currency', currency: 'THB' }) : '-'}</td>
@@ -421,7 +482,7 @@
             document.getElementById('serviceTableContainer').innerHTML = html;
         }
 
-        serviceSearchInput.addEventListener('input', function() {
+        serviceSearchInput.addEventListener('input', function () {
             const searchTerm = this.value.toLowerCase();
             const filteredServices = allServicesData.filter(service => {
                 return (service['รายการ'] && service['รายการ'].toLowerCase().includes(searchTerm)) ||
@@ -431,12 +492,12 @@
         });
 
 
-        document.getElementById('serviceForm').addEventListener('submit', async function(e) {
+        document.getElementById('serviceForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const form = this;
             const serviceData = {};
             new FormData(form).forEach((value, key) => serviceData[key] = value);
-            
+
             // เพิ่ม branch parameter
             serviceData['branch'] = localStorage.getItem('branch') || '1';
 
@@ -515,6 +576,9 @@
             const form = document.getElementById('serviceForm');
             form.elements['ไอดี'].value = serviceToEdit['ไอดี'];
             form.elements['รายการ'].value = serviceToEdit['รายการ'];
+            form.elements['Service Name EN'].value = serviceToEdit['Service Name EN'] || '';
+            form.elements['Service Name MY'].value = serviceToEdit['Service Name MY'] || '';
+            form.elements['Service Name KM'].value = serviceToEdit['Service Name KM'] || '';
             form.elements['รายละเอียด'].value = serviceToEdit['รายละเอียด'] || '';
             form.elements['ราคา'].value = serviceToEdit['ราคา'];
             form.elements['รูปภาพOLD'].value = serviceToEdit['รูปภาพ'] || ''; // เก็บ URL รูปภาพเดิมไว้
@@ -560,13 +624,13 @@
                         }
                     });
                     fetch(CONFIG_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                action: 'deleteService',
-                                id: id,
-                                branch: localStorage.getItem('branch') || '1'
-                            })
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'deleteService',
+                            id: id,
+                            branch: localStorage.getItem('branch') || '1'
                         })
+                    })
                         .then(response => response.json())
                         .then(res => {
                             if (res.success) {
